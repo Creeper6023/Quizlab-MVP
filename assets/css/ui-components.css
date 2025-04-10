@@ -1,0 +1,140 @@
+/* ShadowUI Component Styles */
+
+/* Button hover styles */
+.ui-button-primary:hover:not(:disabled) {
+  background-color: var(--primaryHover, #2563eb) !important;
+  opacity: 0.95;
+}
+
+.ui-button-secondary:hover:not(:disabled) {
+  background-color: var(--secondaryHover, #4b5563) !important;
+  opacity: 0.95;
+}
+
+.ui-button-success:hover:not(:disabled),
+.ui-button-danger:hover:not(:disabled),
+.ui-button-warning:hover:not(:disabled),
+.ui-button-info:hover:not(:disabled),
+.ui-button-dark:hover:not(:disabled),
+.ui-button-light:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ui-button-link:hover {
+  text-decoration: underline;
+}
+
+/* Table styles */
+.ui-table-row-clickable:hover {
+  background-color: var(--light, #f3f4f6);
+}
+
+/* Input focus styles */
+.ui-input:focus {
+  border-color: var(--primary, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ui-input-error:focus {
+  border-color: var(--danger, #ef4444);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Toast animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.ui-toast {
+  animation: slideIn 0.3s ease-out;
+}
+
+.ui-toast.hiding {
+  animation: slideOut 0.3s ease-in forwards;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+/* CSS variables for theme colors */
+:root {
+  --primary: #4F46E5;
+  --primaryHover: #4338CA;
+  --secondary: #6b7280;
+  --secondaryHover: #4b5563;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  --light: #f3f4f6;
+  --dark: #1f2937;
+  --background: #ffffff;
+  --text: #374151;
+  --muted: #9ca3af;
+  --border: #e5e7eb;
+}
+
+/* Modal animation */
+.ui-modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ui-modal {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Accessibility focus styles */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

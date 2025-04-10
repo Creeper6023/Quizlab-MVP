@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": "./assets/js/dist/",
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es5",
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2016", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@ui/*": ["assets/js/ui/*"],
+      "@ui": ["assets/js/ui"]
+    }
+  },
+  "include": ["./assets/js/**/*"]
+}
