@@ -1,23 +1,23 @@
 <?php
 require_once __DIR__ . '/database/db.php';
 
-// Create and initialize the database with test data
+
 $db = new Database();
 $pdo = $db->getConnection();
 
-// Create tables if they don't exist
+
 $sql = file_get_contents(__DIR__ . '/database/schema.sql');
 $pdo->exec($sql);
 echo "Database schema created.<br>";
 
-// Check if we already have users
+
 $stmt = $pdo->query("SELECT COUNT(*) FROM users");
 $userCount = $stmt->fetchColumn();
 
 if ($userCount > 0) {
     echo "Database already contains users. Skipping test data creation.<br>";
 } else {
-    // Create test users with proper password hashing
+
     $users = [
         ['username' => 'admin', 'password' => password_hash('admin123', PASSWORD_DEFAULT), 'role' => 'admin'],
         ['username' => 'teacher', 'password' => password_hash('teacher123', PASSWORD_DEFAULT), 'role' => 'teacher'],
@@ -30,7 +30,7 @@ if ($userCount > 0) {
     }
     echo "Test users created.<br>";
 
-    // Create test classes
+
     $classes = [
         ['name' => 'Mathematics 101', 'description' => 'Introduction to Mathematics'],
         ['name' => 'Science 101', 'description' => 'Introduction to Science'],
@@ -43,33 +43,33 @@ if ($userCount > 0) {
     }
     echo "Test classes created.<br>";
 
-    // Get teacher ID
+
     $stmt = $pdo->query("SELECT id FROM users WHERE role = 'teacher' LIMIT 1");
     $teacherId = $stmt->fetchColumn();
 
-    // Get class IDs
+
     $stmt = $pdo->query("SELECT id FROM classes");
     $classIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    // Assign teacher to classes
+
     $stmt = $pdo->prepare("INSERT INTO class_teachers (class_id, teacher_id) VALUES (?, ?)");
     foreach ($classIds as $classId) {
         $stmt->execute([$classId, $teacherId]);
     }
     echo "Teacher assigned to classes.<br>";
 
-    // Get student ID
+
     $stmt = $pdo->query("SELECT id FROM users WHERE role = 'student' LIMIT 1");
     $studentId = $stmt->fetchColumn();
 
-    // Assign student to classes
+
     $stmt = $pdo->prepare("INSERT INTO class_students (class_id, student_id) VALUES (?, ?)");
     foreach ($classIds as $classId) {
         $stmt->execute([$classId, $studentId]);
     }
     echo "Student assigned to classes.<br>";
 
-    // Create test quizzes
+
     $quizzes = [
         [
             'title' => 'Math Quiz 1',
@@ -106,7 +106,7 @@ if ($userCount > 0) {
     }
     echo "Test quizzes and questions created.<br>";
 
-    // Initialize settings
+
     $settings = [
         ['key' => 'deepseek_api_key', 'value' => getenv('DEEPSEEK_API_KEY') ?: ''],
         ['key' => 'ai_grading_enabled', 'value' => '1']

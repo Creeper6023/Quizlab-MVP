@@ -2,7 +2,7 @@
 require_once "config.php";
 require_once "database/db.php";
 
-// Function to update a user's password
+
 function updateUserPassword($db, $username, $newPassword) {
     try {
         $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
@@ -23,12 +23,12 @@ function updateUserPassword($db, $username, $newPassword) {
     }
 }
 
-// Connect to database
+
 try {
     $db = new Database();
     echo "Connected to database successfully.<br>";
     
-    // Update passwords for default users
+
     updateUserPassword($db, "admin", "admin123");
     updateUserPassword($db, "teacher", "teacher123");
     updateUserPassword($db, "student", "student123");

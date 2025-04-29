@@ -20,7 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Handle Escape key press
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -32,7 +32,7 @@ export const Modal: React.FC<ModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Prevent scrolling when modal is open
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -44,17 +44,17 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
-  // Handle click outside modal
+
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
     }
   };
 
-  // If modal is closed, don't render
+
   if (!isOpen) return null;
 
-  // Size styles
+
   const sizeStyles = {
     sm: { maxWidth: '24rem' },  // 384px
     md: { maxWidth: '32rem' },  // 512px
@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
     full: { maxWidth: '100%', margin: theme.space['4'] },
   };
 
-  // Styles
+
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,

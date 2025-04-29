@@ -42,7 +42,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Get the quiz ID and attempt ID from URL if available
+
   const getParamsFromUrl = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get('id');
@@ -57,10 +57,10 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
 
   useEffect(() => {
     if (urlAttemptId) {
-      // Continue an existing attempt
+
       loadExistingAttempt(urlAttemptId);
     } else if (quizId) {
-      // Start a new quiz
+
       startNewQuiz(quizId);
     }
   }, [quizId, urlAttemptId]);
@@ -87,10 +87,10 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
   const loadExistingAttempt = async (attemptId: number) => {
     try {
       setLoading(true);
-      // Here you would fetch the existing attempt data
-      // For now, we'll just set a mock
+
+
       setAttemptId(attemptId);
-      // Additional loading logic would go here
+
       setLoading(false);
     } catch (err) {
       setError('Failed to load quiz attempt');
@@ -110,7 +110,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
         answer_text: currentAnswer
       });
       
-      // Update the questions array with the new answer
+
       const updatedQuestions = [...questions];
       updatedQuestions[currentQuestionIndex] = {
         ...currentQuestion,
@@ -120,7 +120,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
       
       setSuccessMessage('Answer saved');
       
-      // Clear success message after 2 seconds
+
       setTimeout(() => {
         setSuccessMessage(null);
       }, 2000);
@@ -130,13 +130,13 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
   };
 
   const handleNextQuestion = async () => {
-    // Save the current answer before moving to the next question
+
     await handleSaveAnswer();
     
     if (currentQuestionIndex < questions.length - 1) {
-      // Move to the next question
+
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      // Set the answer input to the existing answer or empty string
+
       const nextQuestion = questions[currentQuestionIndex + 1];
       setCurrentAnswer(nextQuestion.answer_text || '');
     }
@@ -144,9 +144,9 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      // Move to the previous question
+
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-      // Set the answer input to the existing answer or empty string
+
       const prevQuestion = questions[currentQuestionIndex - 1];
       setCurrentAnswer(prevQuestion.answer_text || '');
     }
@@ -155,7 +155,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
   const handleCompleteQuiz = async () => {
     if (!attemptId) return;
     
-    // Save the current answer before completing
+
     await handleSaveAnswer();
     
     if (!window.confirm('Are you sure you want to complete this quiz? This action cannot be undone.')) {
@@ -170,7 +170,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
       setQuizResults(result);
       setLoading(false);
       
-      // Redirect to results page
+
       window.location.href = `/student/view_results.php?attempt_id=${attemptId}`;
     } catch (err) {
       setError('Failed to complete quiz');
@@ -178,7 +178,7 @@ const QuizTaker: React.FC<QuizTakerProps> = ({ userData }) => {
     }
   };
 
-  // Update the current answer when changing questions
+
   useEffect(() => {
     if (questions.length > 0 && currentQuestionIndex < questions.length) {
       const question = questions[currentQuestionIndex];

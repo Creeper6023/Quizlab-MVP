@@ -5,33 +5,33 @@ import QuizCreator from './components/QuizCreator';
 import QuizTaker from './components/QuizTaker';
 import AdminPanel from './components/AdminPanel';
 
-// Get user data from window object (set in PHP)
+
 const userData = (window as any).userData || null;
 
-// Mount React components based on page and user role
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Admin Dashboard
+
   const adminAppElement = document.getElementById('admin-app');
   if (adminAppElement && userData && userData.role === 'admin') {
     const root = createRoot(adminAppElement);
     root.render(<AdminPanel userData={userData} />);
   }
 
-  // Quiz Creator (for teachers)
+
   const quizEditorAppElement = document.getElementById('quiz-editor-app');
   if (quizEditorAppElement && userData && userData.role === 'teacher') {
     const root = createRoot(quizEditorAppElement);
     root.render(<QuizCreator userData={userData} />);
   }
 
-  // Quiz Taker (for students)
+
   const quizTakerAppElement = document.getElementById('quiz-taker-app');
   if (quizTakerAppElement && userData && userData.role === 'student') {
     const root = createRoot(quizTakerAppElement);
     root.render(<QuizTaker userData={userData} />);
   }
 
-  // General Dashboard (for all users)
+
   const dashboardElement = document.getElementById('dashboard-app');
   if (dashboardElement && userData) {
     const root = createRoot(dashboardElement);

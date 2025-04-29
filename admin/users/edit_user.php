@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Location: ' . BASE_URL . '/auth/login.php');
     exit;
@@ -12,7 +12,7 @@ $error = null;
 $success = false;
 $user = null;
 
-// Get user ID from query string
+
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     $_SESSION['error_message'] = 'Invalid user ID';
     header('Location: index.php');
@@ -21,7 +21,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $userId = (int)$_GET['id'];
 
-// Get user details
+
 $user = $db->single(
     "SELECT id, username, role FROM users WHERE id = ?", 
     [$userId]
@@ -33,19 +33,19 @@ if (!$user) {
     exit;
 }
 
-// Handle form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']); // Optional - only update if provided
     $role = trim($_POST['role']);
     
-    // Validate input
+
     if (empty($username) || empty($role)) {
         $error = 'Username and role are required';
     } else if (!in_array($role, array('admin', 'teacher', 'student'))) {
         $error = 'Invalid role selected';
     } else {
-        // Check if username already exists (except for current user)
+
         $existing = $db->single(
             "SELECT id FROM users WHERE username = ? AND id != ?", 
             [$username, $userId]
@@ -54,9 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($existing) {
             $error = 'Username already exists';
         } else {
-            // Update user
+
             if (!empty($password)) {
-                // Update username, role and password
+
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 
                 $result = $db->query(
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [$username, $hashedPassword, $role, $userId]
                 );
             } else {
-                // Update only username and role
+
                 $result = $db->query(
                     "UPDATE users SET username = ?, role = ? WHERE id = ?",
                     [$username, $role, $userId]
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get the page title
+
 $pageTitle = "Edit User";
 include_once INCLUDES_PATH . '/header.php';
 ?>

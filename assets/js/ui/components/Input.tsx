@@ -23,10 +23,10 @@ export const Input: React.FC<InputProps> = ({
   id,
   ...props
 }) => {
-  // Generate a unique ID for accessibility if not provided
+
   const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
 
-  // Base styles
+
   const containerStyle: React.CSSProperties = {
     display: 'block',
     marginBottom: theme.space['4'],
@@ -41,7 +41,7 @@ export const Input: React.FC<InputProps> = ({
     color: error ? theme.colors.danger : theme.colors.text,
   };
 
-  // Determine input size
+
   const inputSizeStyles = {
     sm: { height: theme.space['8'], padding: `0 ${theme.space['2']}`, fontSize: theme.fontSizes.xs },
     md: { height: theme.space['10'], padding: `0 ${theme.space['3']}`, fontSize: theme.fontSizes.sm },

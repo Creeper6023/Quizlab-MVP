@@ -37,7 +37,7 @@ export const Toast: React.FC<ToastProps> = ({
 
   if (!visible) return null;
 
-  // Toast variant styles
+
   const variantStyles = {
     info: {
       backgroundColor: '#EBF8FF',
@@ -131,7 +131,7 @@ export const Toast: React.FC<ToastProps> = ({
   );
 };
 
-// Create a Toast context and provider for global toast management
+
 type ToastContextType = {
   showToast: (props: Omit<ToastProps, 'isVisible' | 'onClose'>) => void;
 };
@@ -171,7 +171,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-// Hook for using toast
+
 export const useToast = () => {
   const context = React.useContext(ToastContext);
   if (!context) {

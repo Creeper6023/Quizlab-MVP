@@ -3,7 +3,7 @@ require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 include_once INCLUDES_PATH . '/header.php';
 
-// Check if user is logged in and is a teacher
+
 if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
     redirect(BASE_URL . '/auth/login.php');
     exit();
@@ -12,7 +12,7 @@ if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
 $db = new Database();
 $teacher_id = $_SESSION['user_id'];
 
-// Check if class ID is provided
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     redirect(BASE_URL . '/teacher/classes/');
     exit();
@@ -20,7 +20,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $class_id = (int)$_GET['id'];
 
-// Check if the class is accessible to this teacher (either as creator or co-teacher)
+
 $class = $db->single(
     "SELECT c.*, 
             CASE 
@@ -38,13 +38,13 @@ if (!$class) {
     exit();
 }
 
-// Get the creator's info
+
 $creator = $db->single(
     "SELECT id, username, email FROM users WHERE id = ?",
     [$class['created_by']]
 );
 
-// Get all students enrolled in this class
+
 $enrolled_students = $db->resultSet(
     "SELECT u.id, u.username, u.email, ce.enrolled_at 
      FROM users u
@@ -54,7 +54,7 @@ $enrolled_students = $db->resultSet(
     [$class_id, ROLE_STUDENT]
 );
 
-// Get all quizzes assigned to this class
+
 $class_quizzes = $db->resultSet(
     "SELECT q.id, q.title, q.description, q.is_published, cq.due_date,
             u.username as created_by_username,
@@ -67,7 +67,7 @@ $class_quizzes = $db->resultSet(
     [$teacher_id, $class_id]
 );
 
-// Get all quizzes created by this teacher that are not assigned to this class
+
 $available_quizzes = $db->resultSet(
     "SELECT q.id, q.title, q.description, q.is_published, q.created_at  
      FROM quizzes q
@@ -78,7 +78,7 @@ $available_quizzes = $db->resultSet(
     [$teacher_id, $class_id]
 );
 
-// Get all students who are not enrolled in this class
+
 $available_students = $db->resultSet(
     "SELECT id, username, email FROM users 
      WHERE role = ? AND id NOT IN (
@@ -347,7 +347,7 @@ $available_students = $db->resultSet(
 document.addEventListener('DOMContentLoaded', function() {
     const classId = <?= $class_id ?>;
     
-    // Edit Class Form
+
     const editClassForm = document.getElementById('editClassForm');
     editClassForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add Students Form
+
     const addStudentsForm = document.getElementById('addStudentsForm');
     if (addStudentsForm) {
         addStudentsForm.addEventListener('submit', function(e) {
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add Quizzes Form
+
     const addQuizzesForm = document.getElementById('addQuizzesForm');
     if (addQuizzesForm) {
         addQuizzesForm.addEventListener('submit', function(e) {
@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Remove Student
+
     document.querySelectorAll('.remove-student').forEach(button => {
         button.addEventListener('click', function() {
             const studentId = this.dataset.studentId;
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Remove Quiz
+
     document.querySelectorAll('.remove-quiz').forEach(button => {
         button.addEventListener('click', function() {
             const quizId = this.dataset.quizId;

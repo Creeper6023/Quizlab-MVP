@@ -2,19 +2,23 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is a teacher
+
 if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Process form submission
+
+error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("POST data: " . print_r($_POST, true));
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
     $teacher_id = $_SESSION['user_id'];
     
-    // Validate input
+
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
     
@@ -25,13 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Generate hash
-        $hash = bin2hex(random_bytes(8));
+
+        $hashId = generateHashId();
         
-        // Insert new class
+
+        while ($db->resultSet("SELECT id FROM classes WHERE hash_id = ?", [$hashId])) {
+            $hashId = generateHashId();
+        }
+        
+
         $db->query(
-            "INSERT INTO classes (name, description, created_by, hash) VALUES (?, ?, ?, ?)",
-            [$name, $description, $teacher_id, $hash]
+            "INSERT INTO classes (name, description, created_by, hash_id) VALUES (?, ?, ?, ?)",
+            [$name, $description, $teacher_id, $hashId]
         );
         
         $class_id = $db->lastInsertId();

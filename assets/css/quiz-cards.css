@@ -1,0 +1,151 @@
+
+.card.h-100 {
+  display: flex;
+  flex-direction: column;
+  height: 100% !important;
+}
+
+.card.h-100 .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.card.h-100 .card-text {
+  flex-grow: 1;
+}
+
+.card.h-100 .card-footer {
+  margin-top: auto;
+}
+
+
+.card-title {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.card-text {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+
+.btn-group {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+
+.shared-quiz-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 20px;
+}
+
+.shared-quiz-container .card {
+  margin-bottom: 0;
+  height: 100%;
+}
+
+
+@media (max-width: 768px) {
+  .shared-quiz-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.card-header .badge {
+  margin-right: 5px;
+}
+
+
+.card-footer {
+  padding: 1rem;
+}
+
+
+.quiz-stats-row {
+  margin-top: auto;
+  margin-bottom: 1rem;
+}
+
+
+.badge.bg-info {
+  background-color: #0dcaf0 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+
+.card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.border-primary.border-opacity-25 {
+  border-color: rgba(13, 110, 253, 0.25) !important;
+}
+
+
+.btn-retake, .btn-redo {
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid #0d6efd;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem;
+}
+
+.btn-retake:hover, .btn-redo:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+  color: white;
+}
+
+.btn-retake i, .btn-redo i {
+  margin-right: 0.25rem;
+}
+
+
+.retake-permission-granted {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  border-left: 3px solid #198754;
+}
+
+.retake-permission-denied {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  border-left: 3px solid #dc3545;
+}

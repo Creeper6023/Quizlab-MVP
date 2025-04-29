@@ -1,11 +1,4 @@
 <?php
-/**
- * This file contains the AI prompt templates for the DeepSeek API.
- */
-
-/**
- * Generate a prompt to check a student's answer against a model answer
- */
 function check_answer($subject, $question, $model_answer, $student_answer) {
     return <<<EOT
 You are a highly qualified teacher in $subject with an expert knowledge of assessment and grading.
@@ -39,9 +32,6 @@ Respond with ONLY the JSON.
 EOT;
 }
 
-/**
- * Generate a prompt to create a similar question
- */
 function similar_question($subject, $original_question, $model_answer, $difficulty_level = 'medium') {
     return <<<EOT
 You are a highly qualified teacher in $subject with expertise in creating educational assessments.
@@ -73,9 +63,6 @@ Make sure the new question tests similar concepts but is not identical to the or
 EOT;
 }
 
-/**
- * Generate a prompt to create a completely new question related to a subject
- */
 function new_question($subject, $topic = '', $difficulty_level = 'medium', $question_type = 'open-ended') {
     return <<<EOT
 You are a highly qualified teacher in $subject with expertise in creating educational assessments.
@@ -98,9 +85,6 @@ Make sure the question is appropriate for educational purposes, clear in its exp
 EOT;
 }
 
-/**
- * Generate a prompt to create multiple new questions related to a subject
- */
 function new_questions($subject, $keywords = '', $count = 3) {
     return <<<EOT
 You are a highly qualified teacher in $subject with expertise in creating educational assessments.
@@ -124,7 +108,7 @@ Please provide your new questions and their model answers in the following JSON 
       "difficulty_level": "<easy, medium, or hard>",
       "question_type": "<type of question: open-ended, multiple-choice, etc.>"
     }
-    // Additional questions as needed to reach the requested count
+
   ]
 }
 ```

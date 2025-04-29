@@ -1,12 +1,12 @@
 <?php
-// Test script for DeepSeek integration
+
 require_once(__DIR__."/config.php");
 require_once(__DIR__."/lib/ai/DeepSeek.php");
 require_once(__DIR__."/lib/ai/ai_prompts.php");
 
 echo "========== DEEPSEEK API TEST ==========\n\n";
 
-// 1. Check if API key is available
+
 $db = new Database();
 $api_key = $db->getSetting('deepseek_api_key');
 
@@ -81,7 +81,7 @@ try {
         echo "Grading response received:\n";
         echo substr($response_data['content'], 0, 200) . (strlen($response_data['content']) > 200 ? "..." : "") . "\n";
         
-        // Try to parse the JSON from the content
+
         $grading_data = json_decode($response_data['content'], true);
         if (json_last_error() === JSON_ERROR_NONE) {
             echo "\nParsed grading data:\n";

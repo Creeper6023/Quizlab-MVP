@@ -7,20 +7,18 @@ $role = $_SESSION['role'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= APP_NAME ?></title>
-    <!-- Favicon -->
-    <link rel="icon" href="<?= BASE_URL ?>/generated-icon.png" type="image/png">
-    <!-- Bootstrap CSS -->
+    <link rel="icon" href="<?= BASE_URL ?>/public/images/Quiz Lab.png" type="image/png">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/ui-components.css">
-    <!-- Font Awesome for icons (CDN) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/quiz-cards.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4 sleek-navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4 sleek-navbar py-0">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="<?= BASE_URL ?>">
-            <img src="<?= BASE_URL ?>/icon.png" alt="QuizLabs Logo" height="28" class="me-2">
+        <a class="navbar-brand d-flex align-items-center py-1" href="<?= BASE_URL ?>">
+            <img src="<?= BASE_URL ?>/public/images/Quiz Lab.png" alt="Quiz Lab Logo" style="height: 3.5rem; margin-right: 0.8rem;">
             <span class="fw-bold">QuizLabs - 培正</span>
         </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
@@ -30,71 +28,40 @@ $role = $_SESSION['role'] ?? '';
             
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <?php if (isLoggedIn()): ?>
-                        <?php if (hasRole(ROLE_ADMIN)): ?>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" 
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-cog me-1"></i>Admin
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin">
-                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/classes">
-                                        <i class="fas fa-chalkboard me-2"></i>Manage Classes
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/settings.php">
-                                        <i class="fas fa-sliders-h me-2"></i>Settings
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/users/">
-                                        <i class="fas fa-users me-2"></i>User Management
-                                    </a></li>
-                                </ul>
-                            </li>
-                        <?php endif; ?>
-                        <?php if (hasRole(ROLE_TEACHER)): ?>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="teacherDropdown" role="button" 
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-chalkboard-teacher me-1"></i>Teacher
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/teacher">
-                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/teacher/classes">
-                                        <i class="fas fa-chalkboard me-2"></i>My Classes
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/teacher/classes/create_class.php">
-                                        <i class="fas fa-plus me-2"></i>Create New Class
-                                    </a></li>
-                                </ul>
-                            </li>
-                        <?php endif; ?>
-                        <?php if (hasRole(ROLE_STUDENT)): ?>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="studentDropdown" role="button" 
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-pencil-alt me-1"></i>Student
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="studentDropdown">
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/student">
-                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/student">
-                                        <i class="fas fa-list me-2"></i>Available Quizzes
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= BASE_URL ?>/student/view_result.php">
-                                        <i class="fas fa-chart-bar me-2"></i>My Results
-                                    </a></li>
-                                </ul>
-                            </li>
-                        <?php endif; ?>
+                    <?php if (isLoggedIn() && hasRole(ROLE_ADMIN)): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog me-1"></i>Admin
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin#stats">
+                                    <i class="fas fa-chart-line me-2"></i>Statistics
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/classes">
+                                    <i class="fas fa-chalkboard me-2"></i>Manage Classes
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/quizzes">
+                                    <i class="fas fa-question-circle me-2"></i>Manage Quizzes
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/settings.php">
+                                    <i class="fas fa-sliders-h me-2"></i>Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/users/">
+                                    <i class="fas fa-users me-2"></i>User Management
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/database_reference.php">
+                                    <i class="fas fa-database me-2"></i>Database Reference
+                                </a></li>
+                            </ul>
+                        </li>
                     <?php endif; ?>
+                    
+                    
                 </ul>
                 
                 <?php if (isLoggedIn()): ?>
@@ -125,3 +92,23 @@ $role = $_SESSION['role'] ?? '';
     </nav>
     
     <main class="container py-4 px-4">
+        <?php if (!empty($_SESSION['error_message'])): ?>
+            <div class="alert alert-danger mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> <?= htmlspecialchars($_SESSION['error_message']) ?>
+            </div>
+            <?php unset($_SESSION['error_message']); // Clear the message after displaying it ?>
+        <?php endif; ?>
+        
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div class="alert alert-danger mb-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> <?= htmlspecialchars($_SESSION['error']) ?>
+            </div>
+            <?php unset($_SESSION['error']); // Clear the message after displaying it ?>
+        <?php endif; ?>
+        
+        <?php if (!empty($_SESSION['success_message'])): ?>
+            <div class="alert alert-success mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i> <?= htmlspecialchars($_SESSION['success_message']) ?>
+            </div>
+            <?php unset($_SESSION['success_message']); // Clear the message after displaying it ?>
+        <?php endif; ?>

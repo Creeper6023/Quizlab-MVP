@@ -2,7 +2,7 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is a teacher
+
 if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
     redirect(BASE_URL . '/auth/login.php');
     exit();
@@ -13,7 +13,7 @@ include_once INCLUDES_PATH . '/header.php';
 $db = new Database();
 $teacher_id = $_SESSION['user_id'];
 
-// Get all classes created by this teacher or assigned to this teacher
+
 $classes = $db->resultSet(
     "SELECT c.*, 
             CASE 
@@ -30,11 +30,11 @@ $classes = $db->resultSet(
 ?>
 
 <div class="container my-4">
-    <h1>My Classes</h1>
-    
-    <!-- Teachers don't need to create classes, they're assigned by admins -->
-    <div class="mb-4">
-        <p class="text-muted">Classes are created and assigned by administrators.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Classes</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClassModal">
+            <i class="fas fa-plus"></i> Create New Class
+        </button>
     </div>
     
     <?php if (empty($classes)): ?>
@@ -57,13 +57,13 @@ $classes = $db->resultSet(
                             </div>
                             <p class="card-text mt-2"><?= htmlspecialchars($class['description']) ?></p>
                             <?php
-                            // Get student count for this class
+
                             $student_count = $db->single(
                                 "SELECT COUNT(*) as count FROM class_enrollments WHERE class_id = ?",
                                 [$class['id']]
                             )['count'];
                             
-                            // Get quiz count for this class
+
                             $quiz_count = $db->single(
                                 "SELECT COUNT(*) as count FROM class_quizzes WHERE class_id = ?",
                                 [$class['id']]
@@ -86,6 +86,63 @@ $classes = $db->resultSet(
     <?php endif; ?>
 </div>
 
-<!-- Teacher classes are managed by admin, no create class functionality here -->
+<!-- Create Class Modal -->
+<div class="modal fade" id="createClassModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createClassModalLabel">Create New Class</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createClassForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="className" class="form-label">Class Name</label>
+                        <input type="text" class="form-control" id="className" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="classDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="classDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const createClassForm = document.getElementById('createClassForm');
+    if (createClassForm) {
+        createClassForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('<?= BASE_URL ?>/teacher/classes/create_class.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    }
+});
+</script>
 
 <?php include_once INCLUDES_PATH . '/footer.php'; ?>

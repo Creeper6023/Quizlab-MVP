@@ -2,19 +2,19 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is a teacher
+
 if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Process form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
     $teacher_id = $_SESSION['user_id'];
     
-    // Validate input
+
     $class_id = (int)($_POST['class_id'] ?? 0);
     $quiz_id = (int)($_POST['quiz_id'] ?? 0);
     
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the class is accessible to this teacher (either as creator or co-teacher)
+
     $class = $db->single(
         "SELECT c.* FROM classes c
          LEFT JOIN class_teachers ct ON c.id = ct.class_id
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the quiz exists in this class
+
     $class_quiz = $db->single(
         "SELECT * FROM class_quizzes WHERE class_id = ? AND quiz_id = ?",
         [$class_id, $quiz_id]
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if anyone has already started this quiz
+
     $attempts = $db->resultSet(
         "SELECT * FROM quiz_attempts 
          WHERE quiz_id = ? 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Remove the quiz from the class
+
     try {
         $db->query(
             "DELETE FROM class_quizzes WHERE class_id = ? AND quiz_id = ?",

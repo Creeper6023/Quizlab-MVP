@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     redirect(BASE_URL . '/auth/login.php');
     exit();
@@ -11,7 +11,7 @@ include_once INCLUDES_PATH . '/header.php';
 
 $db = new Database();
 
-// Get all classes
+
 $classes = $db->resultSet("
     SELECT c.*, u.username as creator_name,
            (SELECT COUNT(*) FROM class_enrollments WHERE class_id = c.id) as student_count,
@@ -110,7 +110,7 @@ $classes = $db->resultSet("
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Create Class Form
+
     const createClassForm = document.getElementById('createClassForm');
     if (createClassForm) {
         createClassForm.addEventListener('submit', function(e) {
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Delete Class
+
     document.querySelectorAll('.delete-class').forEach(button => {
         button.addEventListener('click', function() {
             const classId = this.dataset.classId;

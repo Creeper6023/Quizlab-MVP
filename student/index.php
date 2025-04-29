@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-// Check if user is a student
+
 if (!isLoggedIn() || !hasRole(ROLE_STUDENT)) {
     redirect(BASE_URL . '/auth/login.php');
 }
@@ -9,7 +9,7 @@ if (!isLoggedIn() || !hasRole(ROLE_STUDENT)) {
 $db = new Database();
 $student_id = $_SESSION['user_id'];
 
-// Get student's enrolled classes
+
 $enrolledClasses = $db->resultSet("
     SELECT c.*, u.username as teacher_name, ce.enrolled_at
     FROM classes c
@@ -19,20 +19,40 @@ $enrolledClasses = $db->resultSet("
     ORDER BY c.name
 ", [$student_id]);
 
-// Get available quizzes (published) from enrolled classes
+
 $availableQuizzes = $db->resultSet("
-    SELECT q.*, u.username as teacher_name, cq.class_id, c.name as class_name, cq.due_date
+    SELECT q.*, u.username as teacher_name, cqa.class_id, c.name as class_name
     FROM quizzes q
     JOIN users u ON q.created_by = u.id
-    JOIN class_quizzes cq ON q.id = cq.quiz_id
-    JOIN classes c ON cq.class_id = c.id
+    JOIN class_quiz_assignments cqa ON q.id = cqa.quiz_id
+    JOIN classes c ON cqa.class_id = c.id
     JOIN class_enrollments ce ON c.id = ce.class_id
     WHERE q.is_published = 1 AND ce.user_id = ?
     GROUP BY q.id
     ORDER BY q.created_at DESC
 ", [$student_id]);
 
-// Get the student's attempts
+
+$directlyAssignedQuizzes = $db->resultSet("
+    SELECT q.*, u.username as teacher_name, NULL as class_id, 'Direct Assignment' as class_name
+    FROM quizzes q
+    JOIN users u ON q.created_by = u.id
+    JOIN quiz_student_access qsa ON q.id = qsa.quiz_id
+    WHERE q.is_published = 1 AND qsa.student_id = ?
+    AND q.id NOT IN (
+        SELECT q2.id FROM quizzes q2
+        JOIN class_quiz_assignments cqa ON q2.id = cqa.quiz_id
+        JOIN classes c ON cqa.class_id = c.id
+        JOIN class_enrollments ce ON c.id = ce.class_id
+        WHERE ce.user_id = ?
+    )
+    ORDER BY q.created_at DESC
+", [$student_id, $student_id]);
+
+
+$availableQuizzes = array_merge($availableQuizzes, $directlyAssignedQuizzes);
+
+
 $attempts = $db->resultSet("
     SELECT qa.*, q.title as quiz_title
     FROM quiz_attempts qa
@@ -41,7 +61,7 @@ $attempts = $db->resultSet("
     ORDER BY qa.start_time DESC
 ", [$student_id]);
 
-// Convert attempts to a map for easy lookup
+
 $attemptsMap = [];
 foreach ($attempts as $attempt) {
     if (!isset($attemptsMap[$attempt['quiz_id']])) {
@@ -69,7 +89,7 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <!-- Enrolled Classes Section -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="classes">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
@@ -114,9 +134,9 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
-    
+
     <!-- Available Quizzes Section -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="quizzes">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
@@ -126,12 +146,12 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
                 <div class="card-body">
                     <?php if (count($availableQuizzes) > 0): ?>
-                        <div class="row">
+                        <div class="quiz-list">
                             <?php foreach ($availableQuizzes as $quiz): ?>
                                 <?php 
                                 $hasCompleted = false;
                                 $hasInProgress = false;
-                                
+
                                 if (isset($attemptsMap[$quiz['id']])) {
                                     foreach ($attemptsMap[$quiz['id']] as $attempt) {
                                         if ($attempt['status'] === 'completed') {
@@ -142,27 +162,27 @@ require_once __DIR__ . '/../includes/header.php';
                                     }
                                 }
                                 ?>
-                                
-                                <div class="col-md-6 col-lg-4 mb-4">
-                                    <div class="card h-100 shadow-sm">
-                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <?php if ($hasCompleted): ?>
-                                                    <span class="badge bg-success">Completed</span>
-                                                <?php elseif ($hasInProgress): ?>
-                                                    <span class="badge bg-warning text-dark">In Progress</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-primary">New</span>
-                                                <?php endif; ?>
-                                            </span>
-                                            <?php if ($quiz['due_date']): ?>
-                                                <span class="badge bg-danger">
+
+                                <div class="quiz-card">
+                                    <div class="quiz-card-header">
+                                        <h4><?= htmlspecialchars($quiz['title']) ?></h4>
+                                        <div>
+                                            <?php if ($hasCompleted): ?>
+                                                <span class="quiz-status published">Completed</span>
+                                            <?php elseif ($hasInProgress): ?>
+                                                <span class="quiz-status draft">In Progress</span>
+                                            <?php else: ?>
+                                                <span class="quiz-status published">New</span>
+                                            <?php endif; ?>
+
+                                            <?php if (isset($quiz['due_date']) && $quiz['due_date']): ?>
+                                                <span class="badge bg-danger ms-2">
                                                     <i class="fas fa-clock me-1"></i>Due: <?= date('M j, Y', strtotime($quiz['due_date'])) ?>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="card-body">
-                                            <h5 class="card-title"><?= htmlspecialchars($quiz['title']) ?></h5>
+                                    </div>
+                                    <div class="quiz-card-body">
                                             <div class="mb-3">
                                                 <div class="d-flex align-items-center text-muted small mb-1">
                                                     <i class="fas fa-chalkboard-teacher me-1"></i>
@@ -177,7 +197,7 @@ require_once __DIR__ . '/../includes/header.php';
                                                     <span>Added: <?= date('M j, Y', strtotime($quiz['created_at'])) ?></span>
                                                 </div>
                                             </div>
-                                            
+
                                             <?php if (!empty($quiz['description'])): ?>
                                                 <p class="card-text">
                                                     <?= nl2br(htmlspecialchars(substr($quiz['description'], 0, 150))) ?>
@@ -185,18 +205,53 @@ require_once __DIR__ . '/../includes/header.php';
                                                 </p>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="card-footer bg-white border-top d-grid">
+                                        <div class="quiz-card-footer">
                                             <?php if ($hasCompleted): ?>
-                                                <a href="<?= BASE_URL ?>/student/view_result.php?attempt_id=<?= $attemptsMap[$quiz['id']][0]['id'] ?>" class="btn btn-success">
-                                                    <i class="fas fa-check-circle me-1"></i> View Results
+                                                <a href="<?= BASE_URL ?>/student/view_result.php?attempt_id=<?= $attemptsMap[$quiz['id']][0]['id'] ?>" class="btn btn-primary">
+                                                    <i class="fas fa-eye"></i> View Results
                                                 </a>
+                                                <?php 
+
+                                                $canRetake = false;
+
+
+                                                $quizAllowsRedo = $db->single(
+                                                    "SELECT id FROM quizzes WHERE id = ? AND allow_redo = 1", 
+                                                    [$quiz['id']]
+                                                );
+
+
+
+
+
+                                                $hasRetakePermission = $db->single(
+                                                    "SELECT id FROM quiz_retakes WHERE quiz_id = ? AND student_id = ? AND used = 0",
+                                                    [$quiz['id'], $student_id]
+                                                );
+
+
+                                                $log_message = "Retake check - Quiz: {$quiz['id']}, Student: $student_id, " . 
+                                                               "Global allow_redo: " . ($quizAllowsRedo ? 'Yes' : 'No') . ", " .
+                                                               "Individual permission: " . ($hasRetakePermission ? 'Yes' : 'No');
+                                                file_put_contents(__DIR__ . '/../debug.log', $log_message . PHP_EOL, FILE_APPEND);
+
+                                                if ($quizAllowsRedo || $hasRetakePermission) {
+                                                    $canRetake = true;
+                                                }
+
+                                                if ($canRetake): 
+                                                ?>
+                                                <a href="<?= BASE_URL ?>/student/take_quiz.php?id=<?= $quiz['id'] ?>&retake=1" class="btn-retake">
+                                                    <i class="fas fa-redo"></i> Retake Quiz
+                                                </a>
+                                                <?php endif; ?>
                                             <?php elseif ($hasInProgress): ?>
                                                 <a href="<?= BASE_URL ?>/student/take_quiz.php?id=<?= $quiz['id'] ?>" class="btn btn-primary">
-                                                    <i class="fas fa-play-circle me-1"></i> Continue Quiz
+                                                    <i class="fas fa-play-circle"></i> Continue Quiz
                                                 </a>
                                             <?php else: ?>
                                                 <a href="<?= BASE_URL ?>/student/take_quiz.php?id=<?= $quiz['id'] ?>" class="btn btn-primary">
-                                                    <i class="fas fa-play-circle me-1"></i> Start Quiz
+                                                    <i class="fas fa-play-circle"></i> Start Quiz
                                                 </a>
                                             <?php endif; ?>
                                         </div>
@@ -214,9 +269,9 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
-    
+
     <!-- Quiz History Section -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="history">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
@@ -225,7 +280,13 @@ require_once __DIR__ . '/../includes/header.php';
                     </h5>
                 </div>
                 <div class="card-body">
-                    <?php if (count($attempts) > 0): ?>
+                    <?php 
+
+    $completedAttempts = array_filter($attempts, function($attempt) {
+        return $attempt['status'] === 'completed';
+    });
+
+    if (count($completedAttempts) > 0): ?>
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
@@ -238,7 +299,7 @@ require_once __DIR__ . '/../includes/header.php';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($attempts as $attempt): ?>
+                                    <?php foreach ($completedAttempts as $attempt): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($attempt['quiz_title']) ?></td>
                                             <td><?= date('M j, Y g:i a', strtotime($attempt['start_time'])) ?></td>

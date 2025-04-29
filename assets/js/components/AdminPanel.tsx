@@ -23,7 +23,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ userData }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Form state
+
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('student');
@@ -54,10 +54,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ userData }) => {
         role: newRole
       });
       
-      // Add the new user to the list
+
       setUsers([...users, result.user]);
       
-      // Reset form
+
       setNewUsername('');
       setNewPassword('');
       setNewRole('student');
@@ -65,7 +65,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ userData }) => {
       
       setSuccessMessage('User created successfully');
       
-      // Clear success message after 3 seconds
+
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);

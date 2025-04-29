@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-// Check if user is logged in and has admin role
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header("Location: ../auth/login.php");
     exit;
@@ -10,13 +10,13 @@ if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
 $db = new Database();
 $settings = [];
 
-// Convert settings from database to associative array for easier access
+
 $dbSettings = $db->getAllSettings();
 foreach ($dbSettings as $setting) {
     $settings[$setting['key']] = $setting['value'];
 }
 
-// Handle API key test form submission
+
 $api_test_message = '';
 $api_test_status = '';
 
@@ -128,10 +128,68 @@ $pageTitle = "Admin Settings";
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Save AI Settings
-                        </button>
+                        <div id="aiSettingsSaveBar" class="settings-save-bar" style="display: none;">
+                            <div class="save-message">
+                                <i class="fas fa-exclamation-circle"></i> You have unsaved changes
+                            </div>
+                            <button type="submit" class="btn btn-green">
+                                Save Changes
+                            </button>
+                        </div>
                     </form>
+                    <style>
+                        .settings-save-bar {
+                            position: fixed;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            background: #202225;
+                            padding: 15px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            z-index: 1000;
+                            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                        }
+                        .save-message {
+                            color: #fff;
+                        }
+                        .btn-green {
+                            background: #3ba55c;
+                            color: white;
+                            border: none;
+                        }
+                        .btn-green:hover {
+                            background: #2d7d46;
+                            color: white;
+                        }
+                    </style>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const form = document.querySelector('form');
+                            const saveBar = document.getElementById('aiSettingsSaveBar');
+                            let initialState = new FormData(form);
+
+                            function checkChanges() {
+                                const currentState = new FormData(form);
+                                let hasChanges = false;
+
+                                for(let pair of currentState.entries()) {
+                                    if(initialState.get(pair[0]) !== pair[1]) {
+                                        hasChanges = true;
+                                        break;
+                                    }
+                                }
+
+                                saveBar.style.display = hasChanges ? 'flex' : 'none';
+                            }
+
+                            form.querySelectorAll('input, select').forEach(input => {
+                                input.addEventListener('change', checkChanges);
+                                input.addEventListener('input', checkChanges);
+                            });
+                        });
+                    </script>
                 </div>
             </div>
         </div>
@@ -167,7 +225,7 @@ $pageTitle = "Admin Settings";
             </div>
         </div>
     </div>
-    
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -184,21 +242,21 @@ $pageTitle = "Admin Settings";
                                 <input type="text" id="test_subject" name="subject" value="Science" class="form-control">
                             </div>
                         </div>
-                        
+
                         <div class="row mb-3">
                             <div class="col-12">
                                 <label for="test_question" class="form-label">Question:</label>
                                 <textarea id="test_question" name="question" class="form-control" rows="2">Explain how photosynthesis works.</textarea>
                             </div>
                         </div>
-                        
+
                         <div class="row mb-3">
                             <div class="col-12">
                                 <label for="test_model_answer" class="form-label">Model Answer:</label>
                                 <textarea id="test_model_answer" name="model_answer" class="form-control" rows="3">Photosynthesis is the process by which plants convert light energy into chemical energy. Plants use carbon dioxide, water, and sunlight to produce glucose and oxygen.</textarea>
                             </div>
                         </div>
-                        
+
                         <div class="row mb-3">
                             <div class="col-12">
                                 <label for="test_student_answer" class="form-label">Student Answer:</label>
@@ -243,7 +301,26 @@ $pageTitle = "Admin Settings";
                             <div class="ai-result-container">
                                 <h6 class="border-bottom pb-2 mb-3">AI Grading</h6>
                                 <div id="ai-result-content" class="bg-light p-3 rounded">
-                                    <!-- This will be filled with AI results -->
+                                    <div class="mb-3">
+                                        <h5>Score: <span id="ai-score" class="badge"></span></h5>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Feedback:</h6>
+                                        <p id="ai-feedback" class="feedback-text"></p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Key Points Addressed:</h6>
+                                        <ul id="key-points-addressed" class="list-group"></ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Key Points Missed:</h6>
+                                        <ul id="key-points-missed" class="list-group"></ul>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Suggestions for Improvement:</h6>
+                                        <div id="improvement-suggestions" class="alert alert-info">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -282,7 +359,7 @@ $pageTitle = "Admin Settings";
                                 When enabled, username options will be displayed on the login page to allow for faster login during testing and development.
                             </div>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-save me-2"></i>Save UI Settings
                         </button>
@@ -291,7 +368,7 @@ $pageTitle = "Admin Settings";
             </div>
         </div>
     </div>
-            
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
@@ -312,7 +389,7 @@ $pageTitle = "Admin Settings";
                             <i class="fas fa-trash-alt me-2"></i>Clear Logs
                         </button>
                     </div>
-                    
+
                     <div class="card bg-light" id="log-viewer" style="display: none;">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0" id="log-title">Log Viewer</h5>
@@ -339,56 +416,106 @@ $pageTitle = "Admin Settings";
             const errorDetails = document.getElementById('error-details');
             const errorJson = document.getElementById('error-json');
 
-            // Function to syntex highlight JSON
+
             function formatJsonString(jsonString) {
                 if (!jsonString) return '';
 
                 try {
-                    // Parse the JSON
-                    const json = JSON.parse(jsonString);
 
-                    // Handle the AI response which contains JSON string in content field
+                    const json = typeof jsonString === 'object' ? jsonString : JSON.parse(jsonString);
+                    
+
+                    if (json.score !== undefined && json.feedback !== undefined) {
+                        const aiResult = json;
+                        
+
+                        const scoreElement = document.getElementById('ai-score');
+                        scoreElement.textContent = aiResult.score + '%';
+                        scoreElement.className = `badge bg-${aiResult.score >= 70 ? 'success' : aiResult.score >= 40 ? 'warning' : 'danger'}`;
+                        
+
+                        document.getElementById('ai-feedback').textContent = aiResult.feedback;
+                        
+
+                        const pointsAddressedList = document.getElementById('key-points-addressed');
+                        pointsAddressedList.innerHTML = '';
+                        if (Array.isArray(aiResult.key_points_addressed)) {
+                            aiResult.key_points_addressed.forEach(point => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-success';
+                                li.innerHTML = `<i class="fas fa-check me-2"></i>${point}`;
+                                pointsAddressedList.appendChild(li);
+                            });
+                        }
+                        
+
+                        const pointsMissedList = document.getElementById('key-points-missed');
+                        pointsMissedList.innerHTML = '';
+                        if (Array.isArray(aiResult.key_points_missed)) {
+                            aiResult.key_points_missed.forEach(point => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-danger';
+                                li.innerHTML = `<i class="fas fa-times me-2"></i>${point}`;
+                                pointsMissedList.appendChild(li);
+                            });
+                        }
+                        
+
+                        if (aiResult.improvement_suggestions) {
+                            document.getElementById('improvement-suggestions').innerHTML = 
+                                `<i class="fas fa-lightbulb me-2"></i>${aiResult.improvement_suggestions}`;
+                        }
+                        
+                        return ''; // Return empty since we're updating DOM directly
+                    }
+                    
+
                     if (json.content) {
-                        // Remove the "json\n" prefix and parse the actual JSON content
-                        const cleanedContent = json.content.replace(/^json\n/, '');
-                        const aiResult = JSON.parse(cleanedContent);
+                        try {
+                            const cleanedContent = json.content.replace(/^```json\n|\n```$/g, '');
+                            const aiResult = JSON.parse(cleanedContent);
+                            
 
-                        // Now check if we have score and feedback
-                        if (aiResult.score !== undefined && aiResult.feedback !== undefined) {
-                            let html = '<div class="ai-result-summary">';
-                            html += `<p><strong>Score:</strong> ${aiResult.score}</p>`;
-                            html += `<p><strong>Feedback:</strong> ${aiResult.feedback}</p>`;
+                            const scoreElement = document.getElementById('ai-score');
+                            scoreElement.textContent = aiResult.score + '%';
+                            scoreElement.className = `badge bg-${aiResult.score >= 70 ? 'success' : aiResult.score >= 40 ? 'warning' : 'danger'}`;
+                            
 
-                            // Key points addressed
-                            if (aiResult.key_points_addressed && aiResult.key_points_addressed.length > 0) {
-                                html += '<h6>Key Points Addressed:</h6><ul>';
-                                aiResult.key_points_addressed.forEach(point => {
-                                    html += `<li>${point}</li>`;
-                                });
-                                html += '</ul>';
-                            }
+                            document.getElementById('ai-feedback').textContent = aiResult.feedback;
+                            
 
-                            // Key points missed
-                            if (aiResult.key_points_missed && aiResult.key_points_missed.length > 0) {
-                                html += '<h6>Key Points Missed:</h6><ul>';
-                                aiResult.key_points_missed.forEach(point => {
-                                    html += `<li>${point}</li>`;
-                                });
-                                html += '</ul>';
-                            }
+                            const pointsAddressedList = document.getElementById('key-points-addressed');
+                            pointsAddressedList.innerHTML = '';
+                            aiResult.key_points_addressed.forEach(point => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-success';
+                                li.innerHTML = `<i class="fas fa-check me-2"></i>${point}`;
+                                pointsAddressedList.appendChild(li);
+                            });
+                            
 
-                            // Improvement suggestions
-                            if (aiResult.improvement_suggestions) {
-                                html += `<h6>Improvement Suggestions:</h6><p>${aiResult.improvement_suggestions}</p>`;
-                            }
+                            const pointsMissedList = document.getElementById('key-points-missed');
+                            pointsMissedList.innerHTML = '';
+                            aiResult.key_points_missed.forEach(point => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-danger';
+                                li.innerHTML = `<i class="fas fa-times me-2"></i>${point}`;
+                                pointsMissedList.appendChild(li);
+                            });
+                            
 
-                            html += '</div>';
-                            return html;
+                            document.getElementById('improvement-suggestions').innerHTML = 
+                                `<i class="fas fa-lightbulb me-2"></i>${aiResult.improvement_suggestions}`;
+                            
+                            return ''; // Return empty since we're updating DOM directly
+                        } catch (e) {
+                            console.error('Error parsing AI result:', e);
+                            return '<div class="alert alert-danger">Error parsing AI result</div>';
                         }
                     }
 
 
-                    // Otherwise format as pretty JSON
+
                     return syntaxHighlightJson(json);
                 } catch (e) {
                     console.error('Error parsing JSON:', e);
@@ -396,14 +523,14 @@ $pageTitle = "Admin Settings";
                 }
             }
 
-            // Syntax highlighting for JSON
+
             function syntaxHighlightJson(json) {
-                // Convert to string if it's an object
+
                 if (typeof json !== 'string') {
                     json = JSON.stringify(json, null, 2);
                 }
 
-                // Apply syntax highlighting with regex
+
                 return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
                     let cls = 'json-number';
                     if (/^"/.test(match)) {
@@ -421,20 +548,20 @@ $pageTitle = "Admin Settings";
                 });
             }
 
-            // Function to parse and display error details
+
             function displayErrorDetails(errorString) {
                 try {
-                    // Check if this is a JSON string that contains an error field
+
                     const errorJson = JSON.parse(errorString);
 
                     if (errorJson.error) {
-                        // The error field might be a string or an object
+
                         let errorDetail = errorJson.error;
 
-                        // If it's a string that looks like JSON, try to parse it
+
                         if (typeof errorDetail === 'string' && errorDetail.includes('{')) {
                             try {
-                                // Extract JSON from the string
+
                                 const jsonMatch = errorDetail.match(/\{.*\}/s);
                                 if (jsonMatch) {
                                     const extractedJson = JSON.parse(jsonMatch[0]);
@@ -444,12 +571,12 @@ $pageTitle = "Admin Settings";
                                     };
                                 }
                             } catch (e) {
-                                // If extraction fails, just use the string
+
                                 console.error('Error parsing nested JSON:', e);
                             }
                         }
 
-                        // Handle case where error is already an object
+
                         if (typeof errorDetail === 'object') {
                             return {
                                 message: `API Error: ${errorDetail.message || 'Unknown error'}`,
@@ -457,21 +584,21 @@ $pageTitle = "Admin Settings";
                             };
                         }
 
-                        // Default case where error is a simple string
+
                         return {
                             message: errorDetail,
                             detail: syntaxHighlightJson(errorJson)
                         };
                     }
 
-                    // If no error field but still JSON, show the formatted JSON
+
                     return {
                         message: 'Error processing request',
                         detail: syntaxHighlightJson(errorJson)
                     };
 
                 } catch (e) {
-                    // Not valid JSON, just return the string
+
                     console.error('Error parsing error JSON:', e);
                     return {
                         message: errorString,
@@ -480,7 +607,7 @@ $pageTitle = "Admin Settings";
                 }
             }
 
-            // View debug logs
+
             document.getElementById('view-debug-log').addEventListener('click', function(e) {
                 e.preventDefault();
                 fetch('<?= BASE_URL ?>/debug_log_viewer.php?log=debug')
@@ -524,19 +651,19 @@ $pageTitle = "Admin Settings";
                 }
             });
 
-            // Test AI grading form submission
+
             testForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // Show loading overlay
+
                 loadingOverlay.classList.add('active');
                 loadingOverlay.style.removeProperty('display');
                 testResults.style.display = 'none';
 
-                // Collect form data
+
                 const formData = new FormData(testForm);
 
-                // Send AJAX request
+
                 fetch('<?= BASE_URL ?>/ajax.php', {
                     method: 'POST',
                     body: formData
@@ -545,52 +672,60 @@ $pageTitle = "Admin Settings";
                 .then(data => {
                     console.log('Test AI grading response:', data);
 
-                    // Hide loading overlay
+
                     loadingOverlay.classList.remove('active');
 
-                    // Show test results
+
                     testResults.style.display = 'block';
 
-                    // Display simple result
+
                     if (data.simple_result) {
                         simpleScore.textContent = data.simple_result.score;
                         simpleFeedback.textContent = data.simple_result.feedback;
                     }
 
-                    // Reset error container
+
                     errorContainer.style.display = 'none';
                     errorDetails.style.display = 'none';
 
-                    // Handle different response scenarios
+
                     if (data.error) {
-                        // Show error message
+
                         errorContainer.style.display = 'block';
                         errorMessage.textContent = data.error;
                         document.querySelector('.ai-result-container').style.display = 'none';
                     } else if (data.result === null) {
-                        // AI grading is disabled
+
                         errorContainer.style.display = 'block';
                         errorMessage.textContent = 'AI grading is disabled. Enable it in settings to see AI grading results.';
                         document.querySelector('.ai-result-container').style.display = 'none';
                     } else if (typeof data.result === 'string' && data.result.includes('error')) {
-                        // API error from DeepSeek
+
                         const errorInfo = displayErrorDetails(data.result);
 
                         errorContainer.style.display = 'block';
                         errorMessage.textContent = errorInfo.message;
                         document.querySelector('.ai-result-container').style.display = 'none';
 
-                        // Show detailed error
+
                         errorJson.innerHTML = errorInfo.detail;
                         errorDetails.style.display = 'block';
                     } else {
-                        // Success - AI result available
+
                         errorContainer.style.display = 'none';
                         document.querySelector('.ai-result-container').style.display = 'block';
 
-                        // Process AI result
-                        if (data.result && data.result.content) {
-                            aiResultContent.innerHTML = formatJsonString(data.result.content);
+
+                        if (data.result) {
+                            if (data.result.content) {
+
+                                aiResultContent.innerHTML = formatJsonString(data.result.content);
+                            } else if (typeof data.result === 'object' && data.result.score !== undefined) {
+
+                                aiResultContent.innerHTML = formatJsonString(data.result);
+                            } else {
+                                aiResultContent.innerHTML = '<p>No AI feedback available.</p>';
+                            }
                         } else {
                             aiResultContent.innerHTML = '<p>No AI feedback available.</p>';
                         }
@@ -599,16 +734,90 @@ $pageTitle = "Admin Settings";
                 .catch(error => {
                     console.error('Error testing AI grading:', error);
 
-                    // Hide loading overlay
+
                     loadingOverlay.classList.remove('active');
 
-                    // Show error
+
                     testResults.style.display = 'block';
                     errorContainer.style.display = 'block';
                     errorMessage.textContent = 'An error occurred while testing AI grading: ' + error.message;
                     document.querySelector('.ai-result-container').style.display = 'none';
                 });
             });
+
+            function tryParseJSON(jsonString) {
+                try {
+
+                    let parsed = JSON.parse(jsonString);
+                    return parsed;
+                } catch (e) {
+
+                    const matches = jsonString.match(/```json\s*({[\s\S]*?})\s*```/);
+                    if (matches && matches[1]) {
+                        try {
+                            return JSON.parse(matches[1]);
+                        } catch (e2) {
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+            }
+
+            function updateGradingCard(data) {
+                const aiResultContent = document.getElementById('ai-result-content');
+                const errorContainer = document.querySelector('.error-container');
+                const resultContainer = document.querySelector('.ai-result-container');
+
+                let parsedData = null;
+                
+                if (typeof data === 'string') {
+                    parsedData = tryParseJSON(data);
+                } else if (typeof data === 'object') {
+                    parsedData = data;
+                }
+
+                if (!parsedData) {
+                    errorContainer.style.display = 'block';
+                    errorMessage.textContent = 'Failed to parse AI grading response';
+                    resultContainer.style.display = 'none';
+                    return;
+                }
+
+
+                document.getElementById('ai-score').textContent = parsedData.score + '%';
+                document.getElementById('ai-score').className = 'badge ' + 
+                    (parsedData.score >= 70 ? 'bg-success' : 
+                     parsedData.score >= 40 ? 'bg-warning' : 'bg-danger');
+                
+                document.getElementById('ai-feedback').textContent = parsedData.feedback || 'No feedback available';
+                
+                const addressedList = document.getElementById('key-points-addressed');
+                const missedList = document.getElementById('key-points-missed');
+                
+                addressedList.innerHTML = '';
+                missedList.innerHTML = '';
+                
+                (parsedData.key_points_addressed || []).forEach(point => {
+                    addressedList.innerHTML += `
+                        <li class="list-group-item list-group-item-success">
+                            <i class="fas fa-check me-2"></i>${point}
+                        </li>`;
+                });
+                
+                (parsedData.key_points_missed || []).forEach(point => {
+                    missedList.innerHTML += `
+                        <li class="list-group-item list-group-item-danger">
+                            <i class="fas fa-times me-2"></i>${point}
+                        </li>`;
+                });
+                
+                document.getElementById('improvement-suggestions').textContent = 
+                    parsedData.improvement_suggestions || 'No improvement suggestions available';
+                
+                errorContainer.style.display = 'none';
+                resultContainer.style.display = 'block';
+            }
         });
     </script>
 </body>

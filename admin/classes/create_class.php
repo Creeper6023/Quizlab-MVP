@@ -2,18 +2,22 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Process form submission
+
+error_log("Admin create class - Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("Admin create class - POST data: " . print_r($_POST, true));
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
     
-    // Validate input
+
     $name = trim($_POST['name'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $teacher_id = (int)($_POST['teacher_id'] ?? 0);
@@ -30,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Verify the teacher exists
+
     $teacher = $db->single(
         "SELECT * FROM users WHERE id = ? AND role = 'teacher'",
         [$teacher_id]
@@ -43,16 +47,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Create the class
+
+        $hashId = generateHashId();
+        
+
+        while ($db->resultSet("SELECT id FROM classes WHERE hash_id = ?", [$hashId])) {
+            $hashId = generateHashId();
+        }
+        
+
         $db->query(
-            "INSERT INTO classes (name, description, created_by) VALUES (?, ?, ?)",
-            [$name, $description, $teacher_id]
+            "INSERT INTO classes (name, description, created_by, hash_id) VALUES (?, ?, ?, ?)",
+            [$name, $description, $teacher_id, $hashId]
         );
         
         header('Content-Type: application/json');
         echo json_encode([
             'success' => true, 
-            'message' => 'Class created successfully'
+            'message' => 'Class created successfully',
+            'hash_id' => $hashId
         ]);
         
     } catch (Exception $e) {

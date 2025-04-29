@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/database/db.php';
 
-// Display all users
+
 $db = new Database();
 $pdo = $db->getConnection();
 

@@ -14,14 +14,14 @@ export const Loader: React.FC<LoaderProps> = ({
   fullScreen = false,
   text,
 }) => {
-  // Size values
+
   const sizes = {
     sm: { size: '16px', border: '2px' },
     md: { size: '24px', border: '3px' },
     lg: { size: '48px', border: '4px' },
   };
 
-  // Base styles for the spinner
+
   const spinnerStyle: React.CSSProperties = {
     display: 'inline-block',
     width: sizes[size].size,
@@ -32,7 +32,7 @@ export const Loader: React.FC<LoaderProps> = ({
     animation: 'spin 1s linear infinite',
   };
 
-  // Style for the container
+
   const containerStyle: React.CSSProperties = fullScreen
     ? {
         position: 'fixed',
@@ -54,17 +54,17 @@ export const Loader: React.FC<LoaderProps> = ({
         justifyContent: 'center',
       };
 
-  // Text style
+
   const textStyle: React.CSSProperties = {
     marginTop: theme.space['2'],
     color: theme.colors.text,
     fontSize: size === 'sm' ? theme.fontSizes.xs : size === 'md' ? theme.fontSizes.sm : theme.fontSizes.md,
   };
 
-  // Add the keyframes for the spinning animation to the document 
-  // (Would typically be done with CSS but we're using inline styles)
+
+
   React.useEffect(() => {
-    // Check if the style already exists to prevent duplicates
+
     const styleId = 'loader-keyframes';
     if (!document.getElementById(styleId)) {
       const styleEl = document.createElement('style');
@@ -78,10 +78,10 @@ export const Loader: React.FC<LoaderProps> = ({
       document.head.appendChild(styleEl);
     }
 
-    // Clean up on unmount
+
     return () => {
-      // Only remove if no other loaders exist
-      // This is a simplistic check, in a real app you might want to track loader instances
+
+
       if (document.getElementsByClassName('ui-loader').length <= 1) {
         const styleEl = document.getElementById(styleId);
         if (styleEl) {

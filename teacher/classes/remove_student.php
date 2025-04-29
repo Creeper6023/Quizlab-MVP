@@ -2,19 +2,19 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is a teacher
+
 if (!isLoggedIn() || !hasRole(ROLE_TEACHER)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Process form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
     $teacher_id = $_SESSION['user_id'];
     
-    // Validate input
+
     $class_id = (int)($_POST['class_id'] ?? 0);
     $student_id = (int)($_POST['student_id'] ?? 0);
     
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the class is accessible to this teacher (either as creator or co-teacher)
+
     $class = $db->single(
         "SELECT c.* FROM classes c
          LEFT JOIN class_teachers ct ON c.id = ct.class_id
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the student is enrolled in this class
+
     $enrollment = $db->single(
         "SELECT * FROM class_enrollments WHERE class_id = ? AND user_id = ?",
         [$class_id, $student_id]
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the student has any quiz attempts in this class
+
     $attempts = $db->resultSet(
         "SELECT qa.* FROM quiz_attempts qa
          JOIN class_quizzes cq ON qa.quiz_id = cq.quiz_id
@@ -59,13 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     
     if (!empty($attempts)) {
-        // We'll let them delete anyway, but show warning in the response
+
         $warning = "Student has quiz attempts in this class. Removing them will not delete their quiz records.";
     } else {
         $warning = null;
     }
     
-    // Remove the student from the class
+
     try {
         $db->query(
             "DELETE FROM class_enrollments WHERE class_id = ? AND user_id = ?",

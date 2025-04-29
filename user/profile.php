@@ -1,38 +1,38 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-// Check if user is logged in
+
 if (!isLoggedIn()) {
     redirect(BASE_URL . '/auth/login.php');
     exit();
 }
 
-// Create database connection
+
 $db = new Database();
 
-// Get user information
+
 $userId = $_SESSION['user_id'] ?? 0;
 $role = $_SESSION['role'] ?? '';
 $username = $_SESSION['username'] ?? '';
 
-// Get user details from database
+
 $user = $db->single("SELECT * FROM users WHERE id = ?", [$userId]);
 
-// If user not found, redirect to login
+
 if (!$user) {
     $_SESSION['error_message'] = 'User not found. Please login again.';
     redirect(BASE_URL . '/auth/logout.php');
     exit();
 }
 
-// Get additional information based on user role
+
 $quizScores = [];
 $classInfo = [];
 $upcomingQuizzes = [];
 $recentActivity = [];
 
 if ($role === ROLE_STUDENT) {
-    // Get all quiz attempts for student
+
     $quizScores = $db->resultSet(
         "SELECT qa.id, qa.quiz_id, q.title, qa.total_score, qa.status, qa.created_at 
          FROM quiz_attempts qa 
@@ -42,7 +42,7 @@ if ($role === ROLE_STUDENT) {
         [$userId]
     );
     
-    // Get enrolled classes for student
+
     $classInfo = $db->resultSet(
         "SELECT c.id, c.name, u.username as teacher_name,
          (SELECT COUNT(*) FROM class_quizzes cq JOIN quizzes q ON cq.quiz_id = q.id WHERE cq.class_id = c.id AND q.is_published = 1) as available_quizzes
@@ -54,7 +54,7 @@ if ($role === ROLE_STUDENT) {
         [$userId]
     );
     
-    // Get upcoming quizzes (published but not attempted)
+
     $upcomingQuizzes = $db->resultSet(
         "SELECT q.id, q.title, c.name as class_name, q.created_at
          FROM quizzes q
@@ -69,7 +69,7 @@ if ($role === ROLE_STUDENT) {
         [$userId, $userId]
     );
 } elseif ($role === ROLE_TEACHER) {
-    // Get classes created by teacher
+
     $classInfo = $db->resultSet(
         "SELECT c.id, c.name, c.description, c.created_at,
          (SELECT COUNT(*) FROM class_enrollments WHERE class_id = c.id) as student_count,
@@ -80,10 +80,10 @@ if ($role === ROLE_STUDENT) {
         [$userId]
     );
     
-    // Get recent quizzes created by teacher
+
     $recentActivity = $db->resultSet(
         "SELECT q.id, q.title, q.is_published, q.created_at,
-         (SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = q.id) as question_count,
+         (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) as question_count,
          (SELECT COUNT(*) FROM quiz_attempts WHERE quiz_id = q.id) as attempt_count
          FROM quizzes q
          WHERE q.created_by = ?
@@ -93,10 +93,10 @@ if ($role === ROLE_STUDENT) {
     );
 }
 
-// Set page title
+
 $pageTitle = "User Profile";
 
-// Include header
+
 include_once INCLUDES_PATH . '/header.php';
 ?>
 
@@ -478,7 +478,7 @@ include_once INCLUDES_PATH . '/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // For teacher schedule planner
+
     const editScheduleBtn = document.getElementById('editScheduleBtn');
     if (editScheduleBtn) {
         editScheduleBtn.addEventListener('click', function() {
@@ -486,12 +486,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             scheduleCells.forEach(cell => {
                 cell.addEventListener('click', function() {
-                    // Toggle class selection
+
                     if (cell.classList.contains('bg-primary')) {
                         cell.classList.remove('bg-primary', 'text-white');
                         cell.textContent = '';
                     } else {
-                        // Prompt for class name
+
                         const className = prompt('Enter class name or event:');
                         if (className) {
                             cell.classList.add('bg-primary', 'text-white');
@@ -501,18 +501,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
             
-            // Toggle button text
+
             if (this.textContent.includes('Edit')) {
                 this.innerHTML = '<i class="fas fa-save me-2"></i>Save Schedule';
             } else {
                 this.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Schedule';
-                // Here you would typically save the schedule to the database
+
                 alert('Schedule saved successfully!');
             }
         });
     }
     
-    // Change password form
+
     const changePasswordForm = document.getElementById('changePasswordForm');
     if (changePasswordForm) {
         changePasswordForm.addEventListener('submit', function(e) {
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Ajax request to change password
+
             const formData = new FormData(this);
             formData.append('action', 'change_password');
             
@@ -555,6 +555,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php
-// Include footer
+
 include_once INCLUDES_PATH . '/footer.php';
 ?>

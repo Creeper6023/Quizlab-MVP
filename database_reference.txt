@@ -1,0 +1,203 @@
+===================================================================
+QUIZLABS DATABASE AND NAVIGATION REFERENCE
+===================================================================
+
+This file provides a quick reference guide to the QuizLabs database 
+structure and navigation paths throughout the application.
+
+-------------------------------------------------------------------
+1. DATABASE TABLES
+-------------------------------------------------------------------
+
+1.1 users
+   - Purpose: Stores all user account information
+   - Key fields: id, username, password, role (admin/teacher/student)
+   - Used by: All authentication, user management, and access control
+   - Related to: quizzes (created_by), classes (created_by)
+
+1.2 quizzes
+   - Purpose: Stores quiz information and metadata
+   - Key fields: id, title, description, created_by, is_published, allow_redo
+   - Used by: All quiz-related functions, including taking and grading
+   - Related to: questions, quiz_attempts, quiz_shares, quiz_retakes
+
+1.3 questions
+   - Purpose: Stores individual quiz questions
+   - Key fields: id, quiz_id, question_text, model_answer, points
+   - Used by: Quiz creation, editing, taking, and grading
+   - Related to: quizzes, student_answers
+   - Note: Previously called "quiz_questions" in some parts of code, now fixed
+
+1.4 quiz_student_access
+   - Purpose: Junction table for student access to specific quizzes
+   - Key fields: quiz_id, student_id
+   - Used by: Student dashboard, quiz assignment
+   - Related to: quizzes, users
+
+1.5 quiz_attempts
+   - Purpose: Tracks student attempts at quizzes
+   - Key fields: id, quiz_id, student_id, start_time, end_time, total_score, status
+   - Used by: Quiz taking, results viewing
+   - Related to: quizzes, users, student_answers
+
+1.6 student_answers
+   - Purpose: Stores student responses to questions
+   - Key fields: id, attempt_id, question_id, answer_text, score, feedback
+   - Used by: Quiz taking, grading, results viewing
+   - Related to: quiz_attempts, questions
+
+1.7 classes
+   - Purpose: Stores information about classes
+   - Key fields: id, name, description, created_by, hash_id
+   - Used by: Class management, assignments
+   - Related to: users, class_enrollments, class_quizzes, class_teachers
+
+1.8 class_enrollments
+   - Purpose: Junction table for student enrollment in classes
+   - Key fields: id, class_id, student_id
+   - Used by: Class management, student assignment
+   - Related to: classes, users
+
+1.9 class_quizzes
+   - Purpose: Junction table for quizzes assigned to classes
+   - Key fields: id, class_id, quiz_id, due_date
+   - Used by: Quiz assignments, due date tracking
+   - Related to: classes, quizzes
+
+1.10 class_teachers
+   - Purpose: Junction table for co-teachers in classes
+   - Key fields: id, class_id, teacher_id
+   - Used by: Class management, co-teaching features
+   - Related to: classes, users
+
+1.11 quiz_shares
+   - Purpose: Records shared quizzes between users
+   - Key fields: id, quiz_id, shared_by_id, shared_with_id, permission_level
+   - Used by: Quiz sharing feature
+   - Related to: quizzes, users
+
+1.12 quiz_retakes
+   - Purpose: Tracks permissions for quiz retakes
+   - Key fields: id, quiz_id, student_id, granted_by, used
+   - Used by: Quiz retake feature
+   - Related to: quizzes, users
+
+-------------------------------------------------------------------
+2. NAVIGATION PATHS AND BUTTON DESTINATIONS
+-------------------------------------------------------------------
+
+2.1 Admin Navigation
+
+   Dashboard: /admin/index.php
+   - Displays overall statistics and quick access to management
+   
+   Classes: /admin/classes/index.php
+   - Displays all classes in the system
+   - Create Class: /admin/classes/create_class.php
+   - Manage Class: /admin/classes/manage.php?id=[class_id]
+   - Add Students: /admin/classes/add_students.php?id=[class_id]
+   - Add Quizzes: /admin/classes/add_quizzes.php?id=[class_id]
+   - Delete Class: /admin/classes/delete_class.php?id=[class_id]
+   
+   Quizzes: /admin/quizzes/index.php
+   - Displays all quizzes in the system
+   - Create Quiz: /admin/quizzes/create_quiz.php
+   - Edit Quiz: /admin/quizzes/edit_quiz.php?id=[quiz_id]
+   - View Quiz: /admin/quizzes/view_quiz.php?id=[quiz_id]
+   - Delete Quiz: /admin/quizzes/delete_quiz.php?id=[quiz_id]
+   - Publish Quiz: /admin/quizzes/publish_quiz.php?id=[quiz_id]
+   - Unpublish Quiz: /admin/quizzes/unpublish_quiz.php?id=[quiz_id]
+   - Share Quiz: /admin/quizzes/share_quiz.php?id=[quiz_id]
+   
+   Users: /admin/users/index.php
+   - Displays all users in the system
+   - Add User: /admin/users/add_user.php
+   - Edit User: /admin/users/edit_user.php?id=[user_id]
+   - Delete User: /admin/users/delete_user.php?id=[user_id]
+   - Import Users: /admin/users/import_users.php
+   
+   Settings: /admin/settings.php
+   - System configuration including quick login settings
+
+2.2 Teacher Navigation
+
+   Dashboard: /teacher/index.php
+   - Shows teacher-specific information and stats
+   
+   Classes: /teacher/classes/index.php
+   - Shows classes taught by this teacher
+   - Create Class: /teacher/classes/create_class.php
+   - Manage Class: /teacher/classes/manage.php?id=[class_id]
+   - Add Students: /teacher/classes/add_students.php?id=[class_id]
+   - Add Quizzes: /teacher/classes/add_quizzes.php?id=[class_id]
+   
+   Quiz Management: 
+   - Edit Quiz: /teacher/edit_quiz.php?id=[quiz_id]
+   - View Quiz: /teacher/view_quiz.php?id=[quiz_id]
+   - Publish Quiz: /teacher/publish_quiz.php?id=[quiz_id]
+   - Unpublish Quiz: /teacher/unpublish_quiz.php?id=[quiz_id]
+   - Share Quiz: /teacher/share_quiz.php?id=[quiz_id]
+   - Allow Retake: /teacher/allow_retake.php?quiz_id=[quiz_id]&student_id=[student_id]
+
+2.3 Student Navigation
+
+   Dashboard: /student/index.php
+   - Shows available quizzes and past results
+   
+   Quiz Taking: 
+   - Take Quiz: /student/take_quiz.php?id=[quiz_id]
+   - View Results: /student/view_result.php?attempt_id=[attempt_id]
+
+2.4 Common Navigation
+
+   Authentication:
+   - Login: /auth/login.php
+   - Logout: /auth/logout.php
+   
+   User Profile:
+   - Profile: /user/profile.php
+
+-------------------------------------------------------------------
+3. IMPORTANT DATABASE RELATIONSHIPS
+-------------------------------------------------------------------
+
+3.1 Quiz Creation and Management
+   - users (teacher) → creates → quizzes
+   - quizzes → contain → questions
+   - teachers → share quizzes → with other teachers (via quiz_shares)
+
+3.2 Class Management
+   - users (teacher) → creates → classes
+   - classes → enroll → users (students) via class_enrollments
+   - classes → assign → quizzes via class_quizzes
+   - classes → can have → co-teachers via class_teachers
+
+3.3 Quiz Taking Flow
+   - students → take → quizzes → creating → quiz_attempts
+   - quiz_attempts → contain → student_answers
+   - questions → are answered in → student_answers
+   - teachers → can grant → quiz_retakes → to students
+
+-------------------------------------------------------------------
+4. COMMON CODE PATTERNS
+-------------------------------------------------------------------
+
+4.1 Database Access
+   - All database connections use lib/database/db.php
+   - Common query methods: query(), resultSet(), single(), column()
+   - Table names should match schema.sql definitions exactly
+
+4.2 User Access Control
+   - isLoggedIn() checks for valid session
+   - hasRole() verifies user role permissions
+   - getCurrentUserId() retrieves current user ID
+   - Authentication handled by auth/login.php and auth/logout.php
+
+4.3 Common Include Files
+   - includes/header.php: Page header, navigation, and session setup
+   - includes/footer.php: Page footer and closing tags
+   - All pages should include these for consistent layout
+
+===================================================================
+End of Reference Guide
+===================================================================

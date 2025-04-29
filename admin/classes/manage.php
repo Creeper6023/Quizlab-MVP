@@ -2,13 +2,13 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     redirect(BASE_URL . '/auth/login.php');
     exit();
 }
 
-// Check if class ID is provided
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: ' . BASE_URL . '/admin/classes/');
     exit();
@@ -19,7 +19,7 @@ include_once INCLUDES_PATH . '/header.php';
 $db = new Database();
 $class_id = (int)$_GET['id'];
 
-// Get class details
+
 $class = $db->single(
     "SELECT c.*, u.username as creator_name 
      FROM classes c
@@ -33,7 +33,7 @@ if (!$class) {
     exit();
 }
 
-// Get all students enrolled in this class
+
 $enrolled_students = $db->resultSet(
     "SELECT u.id, u.username, u.email, ce.enrolled_at 
      FROM users u
@@ -43,7 +43,7 @@ $enrolled_students = $db->resultSet(
     [$class_id]
 );
 
-// Get all quizzes assigned to this class
+
 $class_quizzes = $db->resultSet(
     "SELECT q.id, q.title, q.description, q.is_published, cq.due_date, u.username as teacher_name 
      FROM quizzes q
@@ -54,7 +54,7 @@ $class_quizzes = $db->resultSet(
     [$class_id]
 );
 
-// Get all students who are not enrolled in this class
+
 $available_students = $db->resultSet(
     "SELECT id, username, email FROM users 
      WHERE role = 'student' AND id NOT IN (
@@ -64,7 +64,7 @@ $available_students = $db->resultSet(
     [$class_id]
 );
 
-// Get all quizzes that are not assigned to this class
+
 $available_quizzes = $db->resultSet(
     "SELECT q.id, q.title, u.username as teacher_name 
      FROM quizzes q
@@ -333,7 +333,7 @@ $available_quizzes = $db->resultSet(
 document.addEventListener('DOMContentLoaded', function() {
     const classId = <?= $class_id ?>;
     
-    // Edit Class Form
+
     const editClassForm = document.getElementById('editClassForm');
     editClassForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add Students Form
+
     const addStudentsForm = document.getElementById('addStudentsForm');
     if (addStudentsForm) {
         addStudentsForm.addEventListener('submit', function(e) {
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add Quizzes Form
+
     const addQuizzesForm = document.getElementById('addQuizzesForm');
     if (addQuizzesForm) {
         addQuizzesForm.addEventListener('submit', function(e) {
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Remove Student
+
     document.querySelectorAll('.remove-student').forEach(button => {
         button.addEventListener('click', function() {
             const studentId = this.dataset.studentId;
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Remove Quiz
+
     document.querySelectorAll('.remove-quiz').forEach(button => {
         button.addEventListener('click', function() {
             const quizId = this.dataset.quizId;

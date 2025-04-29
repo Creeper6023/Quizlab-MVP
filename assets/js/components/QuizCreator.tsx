@@ -31,14 +31,12 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Form state for adding/editing questions
   const [editMode, setEditMode] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [questionText, setQuestionText] = useState('');
   const [modelAnswer, setModelAnswer] = useState('');
   const [points, setPoints] = useState(10);
 
-  // Get the quiz ID from URL if available
   const getQuizIdFromUrl = (): number | null => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
@@ -89,7 +87,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
     try {
       await deleteQuestion(questionId);
       
-      // Update the active quiz by removing the deleted question
       if (activeQuiz) {
         setActiveQuiz({
           ...activeQuiz,
@@ -99,7 +96,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
       
       setSuccessMessage('Question deleted successfully');
       
-      // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
@@ -115,7 +111,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
     
     try {
       if (editMode && currentQuestion) {
-        // Update existing question
         const updatedQuestion = await updateQuestion({
           id: currentQuestion.id,
           quiz_id: activeQuiz.id,
@@ -124,7 +119,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
           points
         });
         
-        // Update the question in the active quiz
         setActiveQuiz({
           ...activeQuiz,
           questions: activeQuiz.questions.map(q => 
@@ -134,7 +128,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
         
         setSuccessMessage('Question updated successfully');
       } else {
-        // Create new question
         const newQuestion = await createQuestion({
           quiz_id: activeQuiz.id,
           question_text: questionText,
@@ -142,7 +135,6 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
           points
         });
         
-        // Add the new question to the active quiz
         setActiveQuiz({
           ...activeQuiz,
           questions: [...activeQuiz.questions, newQuestion]
@@ -151,14 +143,12 @@ const QuizCreator: React.FC<QuizCreatorProps> = ({ userData }) => {
         setSuccessMessage('Question added successfully');
       }
       
-      // Reset form
       setQuestionText('');
       setModelAnswer('');
       setPoints(10);
       setEditMode(false);
       setCurrentQuestion(null);
       
-      // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);

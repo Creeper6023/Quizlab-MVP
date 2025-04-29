@@ -49,7 +49,7 @@ else if ($method == "new_questions")
 	$keywords = htmlspecialchars($_POST['keywords']);
 	$count = htmlspecialchars($_POST['count']);
 	$content = new_questions($subject, $keywords, $count);
-	// echo $content;
+
 	echo $_SESSION['ai']->send_message($content);
 }
 else if ($method == "new_chat") 

@@ -1,78 +1,125 @@
 <?php
-// Make sure no output has been sent before starting the session
-// Session configuration - this must be at the top before any output
+
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(dirname(__DIR__)));
+}
+
+
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
-// Database configuration
-define('DB_FILE', __DIR__ . '/../../database/quizlabs.db');
 
-// Application configuration
+define('DB_FILE', BASE_PATH . '/database/quizlabs.db');
+
+
 define('APP_NAME', 'QuizLabs - 培正');
 define('BASE_URL', '');
 
-// User roles
+
 define('ROLE_ADMIN', 'admin');
 define('ROLE_TEACHER', 'teacher');
 define('ROLE_STUDENT', 'student');
 
-// DeepSeek API Configuration
-// Default API key should be defined here, admin can update it later
-// IMPORTANT: This is a placeholder API key, it should be updated in the admin settings
+
 define('DEEPSEEK_API_KEY', getenv('DEEPSEEK_API_KEY') ?: '');
 
-// Database interface required for settings
+
 require_once __DIR__ . '/../database/db.php';
 
-// Function to get setting from database with fallback
+
 function getSettingWithDefault($key, $default) {
     try {
         $db = new Database();
         $value = $db->getSetting($key);
-        
-        if ($value !== null && $value !== '') {
-            return $value;
-        }
+        return ($value !== null && $value !== '') ? $value : $default;
     } catch (Exception $e) {
-        // Fallback to default value on error
+        return $default;
     }
-    
-    return $default;
 }
 
-// AI Grading Settings - get from database with fallback to true
-$aiGradingEnabled = getSettingWithDefault('ai_grading_enabled', '1');
-define('AI_GRADING_ENABLED', $aiGradingEnabled === '1');
 
-// Quick Login Settings - get from database with fallback to true 
-$quickLoginEnabled = getSettingWithDefault('quick_login_enabled', '1');
-define('QUICK_LOGIN_ENABLED', $quickLoginEnabled === '1');
+define('AI_GRADING_ENABLED', getSettingWithDefault('ai_grading_enabled', '1') === '1');
 
-// Function to check if user is logged in
+
+define('QUICK_LOGIN_ENABLED', getSettingWithDefault('quick_login_enabled', '1') === '1');
+
+
 function isLoggedIn() {
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
-// Function to check if user has a specific role
 function hasRole($role) {
-    return isLoggedIn() && isset($_SESSION['role']) && $_SESSION['role'] === $role;
+    if (!isLoggedIn() || !isset($_SESSION['role'])) {
+        return false;
+    }
+    return $_SESSION['role'] === ROLE_ADMIN || $_SESSION['role'] === $role;
 }
 
-// Function to redirect user
 function redirect($location) {
-    header("Location: $location");
+    if (!headers_sent()) {
+        header("Location: $location");
+    }
     exit;
 }
 
-// Function to get user's data
 function getUserData() {
-    if (isLoggedIn()) {
-        return [
-            'id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'role' => $_SESSION['role']
-        ];
+    return isLoggedIn() ? [
+        'id' => $_SESSION['user_id'],
+        'username' => $_SESSION['username'],
+        'role' => $_SESSION['role']
+    ] : null;
+}
+
+function generateHashId($length = 11) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+    $id = '';
+    for ($i = 0; $i < $length; $i++) {
+        $id .= $characters[mt_rand(0, strlen($characters) - 1)];
     }
-    return null;
+    return $id;
+}
+
+
+function getIdFromHash($table, $hashId) {
+    global $db;
+    
+    if (!$db) {
+
+        require_once __DIR__ . '/../database/db.php';
+        $db = new Database();
+    }
+    
+    if (empty($hashId)) {
+        return null;
+    }
+    
+    $result = $db->single("SELECT id FROM $table WHERE hash_id = ?", [$hashId]);
+    return $result ? $result['id'] : null;
+}
+
+
+function set_flash_message($type, $message) {
+    $_SESSION['flash_message'] = [
+        'type' => $type,
+        'message' => $message
+    ];
+}
+
+
+function getHashFromId($table, $id) {
+    global $db;
+    
+    if (!$db) {
+
+        require_once __DIR__ . '/../database/db.php';
+        $db = new Database();
+    }
+    
+    if (empty($id)) {
+        return null;
+    }
+    
+    $result = $db->single("SELECT hash_id FROM $table WHERE id = ?", [$id]);
+    return $result ? $result['hash_id'] : null;
 }

@@ -124,7 +124,7 @@ Please provide your new questions and their model answers in the following JSON 
       "difficulty_level": "<easy, medium, or hard>",
       "question_type": "<type of question: open-ended, multiple-choice, etc.>"
     }
-    // Additional questions as needed to reach the requested count
+
   ]
 }
 ```

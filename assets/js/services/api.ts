@@ -1,12 +1,4 @@
-/**
- * API Service for QuizLabs
- * This file contains all the API calls to the backend
- */
-
-// Base URL for API calls
 const API_BASE = '';
-
-// Helper function for API requests
 async function apiRequest(
   endpoint: string, 
   method: string = 'GET', 
@@ -19,7 +11,7 @@ async function apiRequest(
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include' // Include cookies for session management
+    credentials: 'include'
   };
   
   if (data && (method === 'POST' || method === 'PUT')) {
@@ -41,7 +33,6 @@ async function apiRequest(
   }
 }
 
-// Quiz Management
 export async function getQuiz(quizId: number) {
   const result = await apiRequest(`/ajax.php?action=get_quiz&id=${quizId}`);
   return result.quiz;
@@ -54,7 +45,7 @@ export async function createQuestion(questionData: any) {
 
 export async function updateQuestion(questionData: any) {
   const result = await apiRequest('/ajax.php?action=update_question', 'POST', questionData);
-  return questionData; // Return the updated data as the API doesn't return it
+  return questionData;
 }
 
 export async function deleteQuestion(questionId: number) {
@@ -72,7 +63,6 @@ export async function unpublishQuiz(quizId: number) {
   return result;
 }
 
-// Quiz Taking
 export async function startQuiz(quizId: number) {
   const result = await apiRequest(`/ajax.php?action=start_quiz&quiz_id=${quizId}`);
   return result;
@@ -93,7 +83,6 @@ export async function getQuizResults(attemptId: number) {
   return result;
 }
 
-// User Management
 export async function getUsers() {
   const result = await apiRequest('/ajax.php?action=get_users');
   return result;
@@ -105,6 +94,5 @@ export async function createUser(userData: any) {
 }
 
 export async function getUserData(userId: number) {
-  // This is a placeholder - you would implement this based on your API
   return { id: userId, username: 'user', role: 'student' };
 }

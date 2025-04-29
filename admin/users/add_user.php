@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Location: ' . BASE_URL . '/auth/login.php');
     exit;
@@ -11,19 +11,19 @@ $db = new Database();
 $error = null;
 $success = false;
 
-// Handle form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
     $role = trim($_POST['role']);
     
-    // Validate input
+
     if (empty($username) || empty($password) || empty($role)) {
         $error = 'All fields are required';
     } else if (!in_array($role, array('admin', 'teacher', 'student'))) {
         $error = 'Invalid role selected';
     } else {
-        // Check if username already exists
+
         $existing = $db->single(
             "SELECT id FROM users WHERE username = ?", 
             [$username]
@@ -32,13 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($existing) {
             $error = 'Username already exists';
         } else {
-            // Hash password
+
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
-            // Create user
+
+            $hashId = generateHashId();
+            
+
+            while ($db->resultSet("SELECT id FROM users WHERE hash_id = ?", [$hashId])) {
+                $hashId = generateHashId();
+            }
+            
+
             $result = $db->query(
-                "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                [$username, $hashedPassword, $role]
+                "INSERT INTO users (username, password, role, hash_id) VALUES (?, ?, ?, ?)",
+                [$username, $hashedPassword, $role, $hashId]
             );
             
             if ($result) {
@@ -52,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get the page title
+
 $pageTitle = "Add User";
 include_once INCLUDES_PATH . '/header.php';
 ?>

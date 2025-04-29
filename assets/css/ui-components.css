@@ -1,6 +1,6 @@
-/* ShadowUI Component Styles */
 
-/* Button hover styles */
+
+
 .ui-button-primary:hover:not(:disabled) {
   background-color: var(--primaryHover, #2563eb) !important;
   opacity: 0.95;
@@ -24,12 +24,12 @@
   text-decoration: underline;
 }
 
-/* Table styles */
+
 .ui-table-row-clickable:hover {
   background-color: var(--light, #f3f4f6);
 }
 
-/* Input focus styles */
+
 .ui-input:focus {
   border-color: var(--primary, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -40,7 +40,7 @@
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-/* Toast animations */
+
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -71,7 +71,7 @@
   animation: slideOut 0.3s ease-in forwards;
 }
 
-/* Spinner animation */
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -82,7 +82,7 @@
   animation: spin 1s linear infinite;
 }
 
-/* CSS variables for theme colors */
+
 :root {
   --primary: #4F46E5;
   --primaryHover: #4338CA;
@@ -100,7 +100,7 @@
   --border: #e5e7eb;
 }
 
-/* Modal animation */
+
 .ui-modal-overlay {
   animation: fadeIn 0.2s ease-out;
 }
@@ -129,7 +129,7 @@
   }
 }
 
-/* Accessibility focus styles */
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,

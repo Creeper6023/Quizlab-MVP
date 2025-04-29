@@ -1,16 +1,16 @@
 <?php
 require_once __DIR__ . '/database/db.php';
 
-// Fix user roles and add missing student
+
 $db = new Database();
 $pdo = $db->getConnection();
 
-// Fix teacher user's role to 'teacher'
+
 $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE username = ?");
 $stmt->execute(['teacher', 'teacher']);
 echo "Updated teacher user's role.<br>";
 
-// Add student user if not exists
+
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
 $stmt->execute(['student']);
 $studentExists = $stmt->fetchColumn() > 0;
@@ -23,7 +23,7 @@ if (!$studentExists) {
     echo "Student user already exists.<br>";
 }
 
-// Display current users
+
 $stmt = $pdo->query("SELECT id, username, role FROM users");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

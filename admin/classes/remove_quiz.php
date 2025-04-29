@@ -2,18 +2,18 @@
 require_once '../../config.php';
 require_once LIB_PATH . '/database/db.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Process form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = new Database();
     
-    // Validate input
+
     $class_id = (int)($_POST['class_id'] ?? 0);
     $quiz_id = (int)($_POST['quiz_id'] ?? 0);
     
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Check if the class exists
+
     $class = $db->single(
         "SELECT * FROM classes WHERE id = ?",
         [$class_id]
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Remove the quiz from the class
+
         $db->query(
             "DELETE FROM class_quizzes WHERE class_id = ? AND quiz_id = ?",
             [$class_id, $quiz_id]

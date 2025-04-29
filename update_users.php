@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/database/db.php';
 
-// Update user passwords to ensure they are correctly hashed
+
 $db = new Database();
 $pdo = $db->getConnection();
 
-// Display information
+
 echo "<h1>User Password Update</h1>";
 
-// First, let's check the current users
+
 $stmt = $pdo->query("SELECT id, username, password, role FROM users");
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -25,7 +25,7 @@ foreach ($users as $user) {
 }
 echo "</table>";
 
-// Update default test users with proper password hashing
+
 $updateUsers = [
     ['username' => 'admin', 'password' => password_hash('admin123', PASSWORD_DEFAULT)],
     ['username' => 'teacher', 'password' => password_hash('teacher123', PASSWORD_DEFAULT)],
@@ -55,7 +55,7 @@ foreach ($updateUsers as $user) {
 echo "</ul>";
 echo "<p>Total users updated: $updatedCount</p>";
 
-// Finally, let's verify the updates
+
 $stmt = $pdo->query("SELECT id, username, password, role FROM users");
 $updatedUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

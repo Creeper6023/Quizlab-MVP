@@ -25,7 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  // Define base styles
+
   const baseStyle = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -38,7 +38,7 @@ export const Button: React.FC<ButtonProps> = ({
     opacity: disabled ? 0.6 : 1,
   };
 
-  // Size styles
+
   const sizeStyles = {
     sm: {
       fontSize: theme.fontSizes.xs,
@@ -57,7 +57,7 @@ export const Button: React.FC<ButtonProps> = ({
     },
   };
 
-  // Variant styles
+
   const variantStyles = {
     primary: {
       backgroundColor: theme.colors.primary,
@@ -108,10 +108,10 @@ export const Button: React.FC<ButtonProps> = ({
     },
   };
 
-  // Create a class name based on variant and size
+
   const buttonClasses = `ui-button ui-button-${variant} ui-button-${size} ${fullWidth ? 'ui-button-full-width' : ''} ${className}`;
 
-  // Handle inline styles (as a simple approach without CSS-in-JS)
+
   const btnStyle = {
     ...baseStyle,
     ...sizeStyles[size],

@@ -67,7 +67,7 @@ export function Table<T extends Record<string, any>>({
     });
   }, [data, sortConfig]);
 
-  // Styles
+
   const tableContainerStyle: React.CSSProperties = {
     width: '100%',
     overflowX: 'auto',

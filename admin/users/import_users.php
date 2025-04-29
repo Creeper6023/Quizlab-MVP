@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Location: ' . BASE_URL . '/auth/login.php');
     exit;
@@ -12,29 +12,29 @@ $error = null;
 $success = false;
 $importResults = [];
 
-// Handle form submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if file was uploaded
+
     if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] != UPLOAD_ERR_OK) {
         $error = 'Please select a CSV file to upload';
     } else {
         $file = $_FILES['csv_file']['tmp_name'];
         $fileInfo = pathinfo($_FILES['csv_file']['name']);
         
-        // Check file extension
+
         if ($fileInfo['extension'] !== 'csv') {
             $error = 'Only CSV files are allowed';
         } else {
-            // Process CSV file
+
             $handle = fopen($file, 'r');
             
             if ($handle === false) {
                 $error = 'Failed to open file';
             } else {
-                // Read header row to validate format
+
                 $header = fgetcsv($handle);
                 
-                // Check if the CSV has the correct headers (username, password, role)
+
                 if (count($header) < 3 || 
                     strtolower($header[0]) !== 'username' || 
                     strtolower($header[1]) !== 'password' || 
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'Invalid CSV format. The CSV file must have columns: username, password, role';
                     fclose($handle);
                 } else {
-                    // Start transaction
+
                     $db->getConnection()->beginTransaction();
                     
                     try {
@@ -52,11 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $skipped = 0;
                         $errors = 0;
                         
-                        // Process each row
+
                         while (($data = fgetcsv($handle)) !== false) {
                             $row++;
                             
-                            // Skip empty rows
+
                             if (count($data) < 3 || empty($data[0]) || empty($data[1])) {
                                 $importResults[] = [
                                     'row' => $row,
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $password = trim($data[1]);
                             $role = strtolower(trim($data[2]));
                             
-                            // Validate role
+
                             if (!in_array($role, ['admin', 'teacher', 'student'])) {
                                 $importResults[] = [
                                     'row' => $row,
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 continue;
                             }
                             
-                            // Check if username already exists
+
                             $existing = $db->single(
                                 "SELECT id FROM users WHERE username = ?", 
                                 [$username]
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 continue;
                             }
                             
-                            // Create user
+
                             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                             
                             $result = $db->query(
@@ -128,14 +128,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                         }
                         
-                        // Commit transaction
+
                         $db->getConnection()->commit();
                         
                         $success = true;
                         $_SESSION['success_message'] = "Import completed: $created users created, $skipped skipped, $errors errors";
                         
                     } catch (Exception $e) {
-                        // Rollback transaction on error
+
                         $db->getConnection()->rollBack();
                         $error = 'Error during import: ' . $e->getMessage();
                     }
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get the page title
+
 $pageTitle = "Import Users";
 include_once INCLUDES_PATH . '/header.php';
 ?>

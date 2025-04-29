@@ -25,11 +25,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userData }) => {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        // This would fetch dashboard data based on user role
-        // For now, we'll just simulate some data
+
+
         
-        // In a real implementation, you would call your API service here
-        // const data = await fetchDashboardData(userData.id);
+
+
         
         setTimeout(() => {
           setStats({

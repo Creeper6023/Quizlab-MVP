@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-// Check if user is a student
+
 if (!isLoggedIn() || !hasRole(ROLE_STUDENT)) {
     redirect(BASE_URL . '/auth/login.php');
 }
@@ -10,7 +10,7 @@ $db = new Database();
 $student_id = $_SESSION['user_id'];
 $attempt_id = isset($_GET['attempt_id']) ? (int)$_GET['attempt_id'] : 0;
 
-// Verify the attempt exists and belongs to this student
+
 $attempt = $db->single("
     SELECT qa.*, q.title as quiz_title, q.description as quiz_description
     FROM quiz_attempts qa
@@ -19,11 +19,11 @@ $attempt = $db->single("
 ", [$attempt_id, $student_id]);
 
 if (!$attempt) {
-    // Attempt doesn't exist or doesn't belong to this student
+
     redirect(BASE_URL . '/student');
 }
 
-// Get all questions and answers for this attempt
+
 $questionAnswers = $db->resultSet("
     SELECT q.id as question_id, q.question_text, q.model_answer, q.points as max_points,
            a.id as answer_id, a.answer_text, a.score, a.feedback
@@ -40,7 +40,11 @@ include_once INCLUDES_PATH . '/header.php';
     <div class="quiz-results-header">
         <h2>Quiz Results: <?= htmlspecialchars($attempt['quiz_title']) ?></h2>
         <div class="quiz-actions">
-            <a href="<?= BASE_URL ?>/student" class="btn btn-sm btn-outline">
+            <?php $quiz_hash_id = getHashFromId('quizzes', $attempt['quiz_id']); ?>
+            <a href="<?= BASE_URL ?>/student/take_quiz.php?id=<?= $quiz_hash_id ?>&retake=1" class="btn-retake me-2">
+                <i class="fas fa-redo"></i> Retake Quiz
+            </a>
+            <a href="<?= BASE_URL ?>/student" class="btn btn-sm btn-outline-primary">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
         </div>
@@ -102,7 +106,61 @@ include_once INCLUDES_PATH . '/header.php';
                     <?php if (!empty($qa['feedback'])): ?>
                         <div class="feedback-section">
                             <h5>AI Feedback:</h5>
-                            <p><?= nl2br(htmlspecialchars($qa['feedback'])) ?></p>
+                            <?php 
+                                $feedback = json_decode($qa['feedback'], true);
+                                if ($feedback && is_array($feedback)): 
+                            ?>
+                                <div class="score-section mb-3">
+                                    <span class="badge bg-<?= $feedback['score'] >= 70 ? 'success' : ($feedback['score'] >= 40 ? 'warning' : 'danger') ?>">
+                                        Score: <?= $feedback['score'] ?>%
+                                    </span>
+                                </div>
+
+                                <?php if (!empty($feedback['feedback'])): ?>
+                                    <div class="mb-3">
+                                        <strong>Feedback:</strong>
+                                        <p><?= nl2br(htmlspecialchars($feedback['feedback'])) ?></p>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($feedback['key_points_addressed'])): ?>
+                                    <div class="mb-3">
+                                        <strong>Key Points Addressed:</strong>
+                                        <ul class="list-group">
+                                            <?php foreach ($feedback['key_points_addressed'] as $point): ?>
+                                                <li class="list-group-item list-group-item-success">
+                                                    <i class="fas fa-check me-2"></i><?= htmlspecialchars($point) ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($feedback['key_points_missed'])): ?>
+                                    <div class="mb-3">
+                                        <strong>Areas for Improvement:</strong>
+                                        <ul class="list-group">
+                                            <?php foreach ($feedback['key_points_missed'] as $point): ?>
+                                                <li class="list-group-item list-group-item-danger">
+                                                    <i class="fas fa-times me-2"></i><?= htmlspecialchars($point) ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($feedback['improvement_suggestions'])): ?>
+                                    <div class="mb-3">
+                                        <strong>Suggestions for Improvement:</strong>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <?= nl2br(htmlspecialchars($feedback['improvement_suggestions'])) ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <p><?= nl2br(htmlspecialchars($qa['feedback'])) ?></p>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>

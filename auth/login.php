@@ -1,7 +1,5 @@
 <?php
 require_once "../config.php";
-
-// Check if already logged in, redirect to appropriate dashboard
 if (isset($_SESSION['user']) && isset($_SESSION['user']['role'])) {
     $role = $_SESSION['user']['role'];
     
@@ -19,7 +17,6 @@ if (isset($_SESSION['user']) && isset($_SESSION['user']['role'])) {
 
 $error = '';
 
-// Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -33,32 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // For debugging
             error_log("Login attempt: Username: $username, Password: *****, User found: " . ($user ? 'Yes' : 'No'));
             
             if ($user) {
-                // For debugging
                 error_log("Password verification: " . ($password == 'admin123' ? 'Password matches admin123' : 'Password does not match admin123'));
                 error_log("Stored password hash: " . substr($user['password'], 0, 20) . "...");
                 error_log("Password verify result: " . (password_verify($password, $user['password']) ? 'True' : 'False'));
                 
                 if (password_verify($password, $user['password'])) {
-                    // Set session variables
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
-                    
-                    // Store user data in session for ease of access
                     $_SESSION['user'] = [
                         'id' => $user['id'],
                         'username' => $user['username'],
                         'role' => $user['role']
                     ];
                     
-                    // Log login success
                     error_log("User {$user['username']} logged in successfully with role {$user['role']}");
-                    
-                    // Redirect based on role
                     if ($user['role'] === ROLE_ADMIN) {
                         header("Location: ../admin/");
                         exit;
@@ -70,12 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         exit;
                     }
                 } else {
-                    // Log login failure
                     error_log("Failed login attempt for username: $username - Password verification failed");
                     $error = "Invalid username or password.";
                 }
             } else {
-                // Log login failure
                 error_log("Failed login attempt for username: $username - User not found");
                 $error = "Invalid username or password.";
             }
@@ -86,8 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// For testing/development only - quick login buttons
-// This can now be configured in admin settings
+
 
 $pageTitle = "Login";
 ?>
@@ -98,10 +84,8 @@ $pageTitle = "Login";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizLabs - <?php echo $pageTitle; ?></title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <!-- Font Awesome for icons (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .login-container {
@@ -274,7 +258,6 @@ $pageTitle = "Login";
         </div>
     </div>
     
-    <!-- Bootstrap JS -->
     <script src="../assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/main.js"></script>
 </body>

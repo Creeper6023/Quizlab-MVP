@@ -1,7 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../../config.php';
 
-// Check if user is logged in and is an admin
+
 if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
     header('Location: ' . BASE_URL . '/auth/login.php');
     exit;
@@ -9,10 +10,18 @@ if (!isLoggedIn() || !hasRole(ROLE_ADMIN)) {
 
 $db = new Database();
 
-// Get all users
-$users = $db->getAllUsers();
 
-// Get the page title
+$users = $db->resultSet("
+    SELECT u.id, u.username, u.role, u.created_at,
+           GROUP_CONCAT(DISTINCT c.name) as classes
+    FROM users u
+    LEFT JOIN class_enrollments ce ON u.id = ce.user_id
+    LEFT JOIN classes c ON ce.class_id = c.id
+    GROUP BY u.id
+    ORDER BY u.username
+");
+
+
 $pageTitle = "User Management";
 include_once INCLUDES_PATH . '/header.php';
 ?>
@@ -67,6 +76,7 @@ include_once INCLUDES_PATH . '/header.php';
                             <th scope="col">#</th>
                             <th scope="col">Username</th>
                             <th scope="col">Role</th>
+                            <th scope="col">Classes</th>
                             <th scope="col" class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -81,8 +91,26 @@ include_once INCLUDES_PATH . '/header.php';
                                             echo $user['role'] === 'admin' ? 'danger' : 
                                                 ($user['role'] === 'teacher' ? 'success' : 'primary'); 
                                         ?>">
+                                            <i class="fas fa-<?php 
+                                                echo $user['role'] === 'admin' ? 'shield-alt' : 
+                                                    ($user['role'] === 'teacher' ? 'chalkboard-teacher' : 'user-graduate'); 
+                                            ?> me-1"></i>
                                             <?php echo ucfirst(htmlspecialchars($user['role'])); ?>
                                         </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($user['classes']): ?>
+                                            <?php foreach (explode(',', $user['classes']) as $class): ?>
+                                                <span class="badge bg-light text-dark me-1">
+                                                    <i class="fas fa-book-reader me-1"></i>
+                                                    <?php echo htmlspecialchars($class); ?>
+                                                </span>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <span class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>No classes
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end">
                                         <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-outline-primary">
@@ -103,9 +131,9 @@ include_once INCLUDES_PATH . '/header.php';
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" class="text-center py-4">
+                                <td colspan="5" class="text-center py-4">
                                     <div class="empty-state">
-                                        <i class="fas fa-users-slash"></i>
+                                        <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
                                         <p>No users found</p>
                                     </div>
                                 </td>
@@ -119,12 +147,12 @@ include_once INCLUDES_PATH . '/header.php';
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close btn-close-white" onclick="closeModal(document.getElementById('deleteModal'))" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p class="mb-4">Are you sure you want to delete the user <strong id="deleteUserName"></strong>?</p>
@@ -134,8 +162,8 @@ include_once INCLUDES_PATH . '/header.php';
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal(document.getElementById('deleteModal'))">Cancel</button>
-                <form action="<?= BASE_URL ?>/admin/users/delete_user.php" method="post" id="deleteForm">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="delete_user.php" method="post" id="deleteForm">
                     <input type="hidden" name="user_id" id="deleteUserId">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
@@ -145,65 +173,33 @@ include_once INCLUDES_PATH . '/header.php';
 </div>
 
 <script>
-    // Simple, reliable modal handling
-    function confirmDelete(userId, username) {
-        // Set the values in the form 
-        document.getElementById('deleteUserId').value = userId;
-        document.getElementById('deleteUserName').textContent = username;
-        
-        // Show the modal
-        const deleteModal = document.getElementById('deleteModal');
-        deleteModal.classList.add('show');
-        document.body.classList.add('modal-open');
-    }
+function confirmDelete(userId, username) {
+    document.getElementById('deleteUserId').value = userId;
+    document.getElementById('deleteUserName').textContent = username;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function filterUsers() {
+    const input = document.getElementById('userSearch');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('usersTable');
+    const rows = table.getElementsByTagName('tr');
     
-    // Clean function to close any modal
-    function closeModal(modalElement) {
-        modalElement.classList.remove('show');
-        document.body.classList.remove('modal-open');
-    }
-    
-    // Initialize tooltips and popovers if needed
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Bootstrap components
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+    for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i].getElementsByTagName('td');
+        let show = false;
         
-        // Add event listeners for all modal close buttons
-        document.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]').forEach(button => {
-            button.addEventListener('click', function() {
-                const modalElement = this.closest('.modal');
-                closeModal(modalElement);
-            });
-        });
-    });
-    
-    // Filter users function
-    function filterUsers() {
-        const input = document.getElementById('userSearch');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('usersTable');
-        const rows = table.getElementsByTagName('tr');
-        
-        for (let i = 1; i < rows.length; i++) {
-            const username = rows[i].getElementsByTagName('td')[1];
-            const role = rows[i].getElementsByTagName('td')[2];
-            
-            if (username || role) {
-                const usernameValue = username.textContent || username.innerText;
-                const roleValue = role.textContent || role.innerText;
-                
-                if (usernameValue.toUpperCase().indexOf(filter) > -1 || 
-                    roleValue.toUpperCase().indexOf(filter) > -1) {
-                    rows[i].style.display = '';
-                } else {
-                    rows[i].style.display = 'none';
-                }
+        for (let j = 0; j < cols.length - 1; j++) {
+            const text = cols[j].textContent || cols[j].innerText;
+            if (text.toUpperCase().indexOf(filter) > -1) {
+                show = true;
+                break;
             }
         }
+        
+        rows[i].style.display = show ? '' : 'none';
     }
+}
 </script>
 
 <?php include_once INCLUDES_PATH . '/footer.php'; ?>
